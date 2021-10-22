@@ -36,8 +36,6 @@ PaintArea::~PaintArea()
 {
     qDeleteAll(m_linecenters);
     qDeleteAll(m_lineBresenhams);
-    //qDeleteAll(m_rects);
-   // qDeleteAll(m_ellipses);
     qDeleteAll(m_shapes);
 
 }
@@ -124,13 +122,14 @@ bool PaintArea::getIsModify()
 }
 
 
-//缩放
+//缩放 放大
 void PaintArea::zoomIn()
 {
     m_scale *= 1.2;
     update();
 }
 
+//缩小
 void PaintArea::zoomOut()
 {
     m_scale /= 1.2;
@@ -710,7 +709,7 @@ void PaintArea::paintPolygon(QVector<QPoint> pointList,QPen p,int width, QImage 
 void PaintArea::fillbyScan(QPoint beginPoint, QPoint endPoint, QImage &image){
 
     QPainter paint(&image);
-    paint.setRenderHint(QPainter::Antialiasing, true);//反锯齿功能
+
     paint.setPen(pen);
 
 

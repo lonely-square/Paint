@@ -145,7 +145,7 @@ void polygonInner::drawPolyScans(QPainter* ptr,QColor color,qreal scale)
                 prey=maxy;
 
 
-                //ptr->restore();
+                ptr->restore();
             }
             arr.clear();
         }

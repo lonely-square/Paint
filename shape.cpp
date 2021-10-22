@@ -141,7 +141,6 @@ bool polygon::IsIn(QPoint p)
 
 void polygon::DrawIt(QPainter* ptr,QColor color,qreal scale)
 {
-    //qDebug() <<"drwaIT"<<endl;
     return polygonInner->drawPolyScans(ptr,color,scale);
 }
 
@@ -216,7 +215,7 @@ void Bezier::DrawIt(QPainter* ptr,QColor color,qreal scale)
     p.setColor(Qt::red);
     ptr->setPen(p);
     for (int i=0;i < resPoints.size() ; i++) {
-        ptr->drawPoint(resPoints[i]);
+        ptr->drawPoint(resPoints[i]/scale);
     }
 }
 

@@ -311,7 +311,7 @@ void PaintWindow::onExit()
 void PaintWindow::onZoomIn()
 {
     m_paintArea->zoomIn();
-    m_paintArea->resize(m_paintArea->getImageSize());
+   // m_paintArea->resize(m_paintArea->getImageSize());
 }
 
 void PaintWindow::onZoomOut()
