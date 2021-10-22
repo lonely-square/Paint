@@ -149,11 +149,7 @@ public:
     QPoint beginPoint;
     QPoint endPoint;
     void setcenter(){
-        int x=0,y=0;
-        x=(beginPoint.x()+endPoint.x())/2;
-        y=(beginPoint.y()+endPoint.y())/2;
-        center=QPoint(x,y);
-
+        center=beginPoint;
     }
     bool IsIn(QPoint);
     void DrawIt(QPainter* ptr,QColor color);
@@ -176,10 +172,8 @@ public:
     void paintEllipse(QPoint beginPoint, QPoint endPoint,QPen p,int width, QPainter* paint);
 
     void setcenter(){
-        int x=0,y=0;
-        x=(beginPoint.x()+endPoint.x())/2;
-        y=(beginPoint.y()+endPoint.y())/2;
-        center=QPoint(x,y);
+
+        center=beginPoint;
 
     }
     void translation(int offsetX,int offsetY);//平移

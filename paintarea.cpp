@@ -1030,7 +1030,6 @@ void PaintArea::keyPressEvent(QKeyEvent *ev)
             sX=1.1;
             sY=1.1;
             paintImage(m_tmpImage);
-
         }
     }
     if(ev->key() == Qt::Key_S)

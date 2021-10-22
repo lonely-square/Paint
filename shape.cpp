@@ -1300,7 +1300,7 @@ bool Circle::IsIn(QPoint p)
          b = endPoint.y()-beginPoint.y();
          if(p.x()*p.x()+p.y()*p.y()<a*a+b*b)
          {
-             cout <<"choose ellipse"<<endl;
+             cout <<"choose circle"<<endl;
              return true;}
          else
              return false;
