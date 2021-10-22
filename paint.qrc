@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/">
+        <file>image/color.png</file>
+        <file>image/rotate.png</file>
+        <file>image/choose.png</file>
+        <file>image/minus.png</file>
+        <file>image/Move.png</file>
+        <file>image/plus.png</file>
+        <file>image/redo.png</file>
+        <file>image/deleteZone.png</file>
+        <file>image/clear.png</file>
+        <file>image/Zoom.png</file>
+    </qresource>
+</RCC>
