@@ -33,7 +33,7 @@ public:
 
     void setPoint(QVector<QPoint> points);
     void showPolygonInEdgeTable();//建立有序边表算法
-    void drawPolyScans(QPainter* ptr,QColor color); //扫描线算法
+    void drawPolyScans(QPainter* ptr,QColor color,qreal scale); //扫描线算法
     void showPolygonInSeed(QPainter* ptr);//边标志算法
     bool isInPolygon(QPoint p);
 };

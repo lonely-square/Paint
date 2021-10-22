@@ -105,7 +105,7 @@ void PaintArea::setDrawShape(DrawShapeType drawShapeType)
         {
             if(!m_shapes[i]->ischoose)
             {
-                m_shapes[i]->DrawIt(&painter,m_shapes[i]->p.color());
+                m_shapes[i]->DrawIt(&painter,m_shapes[i]->p.color(),m_scale);
             }
         }
     }
@@ -718,7 +718,7 @@ void PaintArea::fillbyScan(QPoint beginPoint, QPoint endPoint, QImage &image){
     {
         if(m_shapes[i]->IsIn(beginPoint))
         {
-            m_shapes[i]->DrawIt(&paint,pen.color());
+            m_shapes[i]->DrawIt(&paint,pen.color(),m_scale);
         }
     }
 
@@ -974,7 +974,7 @@ void PaintArea::paintTrans(QImage &image)
         {
             paint.setPen(m_shapes[i]->p);
             m_shapes[i]->translation(deltaPoint.x(),deltaPoint.y());
-            m_shapes[i]->DrawIt(&paint,m_shapes[i]->p.color());
+            m_shapes[i]->DrawIt(&paint,m_shapes[i]->p.color(),m_scale);
         }
     }
 }
@@ -988,7 +988,7 @@ void PaintArea::paintRotate(double thita,QImage &image)
         {
             paint.setPen(m_shapes[i]->p);
             m_shapes[i]->rotate(thita);
-            m_shapes[i]->DrawIt(&paint,m_shapes[i]->p.color());
+            m_shapes[i]->DrawIt(&paint,m_shapes[i]->p.color(),m_scale);
         }
         qDebug() << "画转了"<<endl;
     }
@@ -1003,7 +1003,7 @@ void PaintArea::paintZoom(double x,double y,QImage &image)
         {
             paint.setPen(m_shapes[i]->p);
             m_shapes[i]->zoom(x,y);
-            m_shapes[i]->DrawIt(&paint,m_shapes[i]->p.color());
+            m_shapes[i]->DrawIt(&paint,m_shapes[i]->p.color(),m_scale);
         }
     }
 }
@@ -1144,7 +1144,7 @@ void PaintArea::mousePressEvent(QMouseEvent *event)
                {
                    if(!m_shapes[i]->ischoose)
                    {
-                       m_shapes[i]->DrawIt(&painter,m_shapes[i]->p.color());
+                       m_shapes[i]->DrawIt(&painter,m_shapes[i]->p.color(),m_scale);
                    }
                }
 

@@ -139,10 +139,10 @@ bool polygon::IsIn(QPoint p)
     return polygonInner->isInPolygon(p);
 }
 
-void polygon::DrawIt(QPainter* ptr,QColor color)
+void polygon::DrawIt(QPainter* ptr,QColor color,qreal scale)
 {
     //qDebug() <<"drwaIT"<<endl;
-    return polygonInner->drawPolyScans(ptr,color);
+    return polygonInner->drawPolyScans(ptr,color,scale);
 }
 
 /*Bezier曲线生成*/
@@ -211,7 +211,7 @@ bool Bezier::IsIn(QPoint p)
     return true;
 }
 
-void Bezier::DrawIt(QPainter* ptr,QColor color)
+void Bezier::DrawIt(QPainter* ptr,QColor color,qreal scale)
 {
     p.setColor(Qt::red);
     ptr->setPen(p);
@@ -225,7 +225,7 @@ bool Linecenter::IsIn(QPoint p)
     return false;
 }
 
-void Linecenter::DrawIt(QPainter* ptr,QColor color)
+void Linecenter::DrawIt(QPainter* ptr,QColor color,qreal scale)
 {
 
 }
@@ -235,7 +235,7 @@ bool LineBresenham::IsIn(QPoint p)
     return false;
 }
 
-void LineBresenham::DrawIt(QPainter* ptr,QColor color)
+void LineBresenham::DrawIt(QPainter* ptr,QColor color,qreal scale)
 {
 
 }
@@ -245,7 +245,7 @@ bool Rect::IsIn(QPoint p)
     return false;
 }
 
-void Rect::DrawIt(QPainter* ptr,QColor color)
+void Rect::DrawIt(QPainter* ptr,QColor color,qreal scale)
 {
 
 }
@@ -255,7 +255,7 @@ bool Circle::IsIn(QPoint p)
     return false;
 }
 
-void Circle::DrawIt(QPainter* ptr,QColor color)
+void Circle::DrawIt(QPainter* ptr,QColor color,qreal scale)
 {
 
 }
@@ -265,7 +265,7 @@ bool ellipse::IsIn(QPoint p)
     return false;
 }
 
-void ellipse::DrawIt(QPainter* ptr,QColor color)
+void ellipse::DrawIt(QPainter* ptr,QColor color,qreal scale)
 {
 
 }

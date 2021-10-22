@@ -67,7 +67,7 @@ void polygonInner::showPolygonInEdgeTable()
 
 }
 
-void polygonInner::drawPolyScans(QPainter* ptr,QColor color)
+void polygonInner::drawPolyScans(QPainter* ptr,QColor color,qreal scale)
 {
 
     int scanLines;//扫描线数量
@@ -131,7 +131,7 @@ void polygonInner::drawPolyScans(QPainter* ptr,QColor color)
                 }
                 ptr->save();
                 ptr->setPen(color);
-                ptr->drawLine(QPoint(x0, y),QPoint(x1, y));
+                ptr->drawLine(QPoint(x0/scale, y/scale),QPoint(x1/scale, y/scale));
                 ptr->restore();
             }
             arr.clear();

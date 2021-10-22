@@ -45,7 +45,7 @@ public:
     }
 
     virtual bool IsIn(QPoint) =0;  //点是否在里面
-    virtual void DrawIt(QPainter* ptr,QColor color)=0;     //内部填充颜色
+    virtual void DrawIt(QPainter* ptr,QColor color,qreal scale)=0;     //内部填充颜色
 
     virtual void translation(int offsetX,int offsetY);//平移
     virtual void rotate(double thita);//旋转
@@ -65,7 +65,7 @@ public:
     }
 
     bool IsIn(QPoint);
-    void DrawIt(QPainter* ptr,QColor color);
+    void DrawIt(QPainter* ptr,QColor color,qreal scale);
 
 
 };
@@ -81,7 +81,7 @@ public:
     }
 
     bool IsIn(QPoint);
-    void DrawIt(QPainter* ptr,QColor color);
+    void DrawIt(QPainter* ptr,QColor color,qreal scale);
 
 
 };
@@ -98,7 +98,7 @@ public:
 
     }
     bool IsIn(QPoint);
-    void DrawIt(QPainter* ptr,QColor color);
+    void DrawIt(QPainter* ptr,QColor color,qreal scale);
 };
 
 
@@ -114,7 +114,7 @@ public:
 
     }
     bool IsIn(QPoint);
-    void DrawIt(QPainter* ptr,QColor color);
+    void DrawIt(QPainter* ptr,QColor color,qreal scale);
 };
 
 class Circle: public Shape{
@@ -129,7 +129,7 @@ public:
 
     }
     bool IsIn(QPoint);
-    void DrawIt(QPainter* ptr,QColor color);
+    void DrawIt(QPainter* ptr,QColor color,qreal scale);
 
 };
 
@@ -139,7 +139,7 @@ public:
     QPoint endPoint;
 
     bool IsIn(QPoint);
-    void DrawIt(QPainter* ptr,QColor color);
+    void DrawIt(QPainter* ptr,QColor color,qreal scale);
 
     void setcenter(){
         int x=0,y=0;
@@ -157,7 +157,7 @@ public:
     polygonInner* polygonInner;
 
     bool IsIn(QPoint);
-    void DrawIt(QPainter* ptr,QColor color);
+    void DrawIt(QPainter* ptr,QColor color,qreal scale);
     void setcenter(){
         int x=0,y=0;
         for(int i = 0; i<pointList.size()-1; i++)
