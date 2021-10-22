@@ -133,19 +133,19 @@ void polygonInner::drawPolyScans(QPainter* ptr,QColor color,qreal scale)
                 ptr->setPen(color);
                 cout << y/scale<<endl;
 
-                maxy=ceil(y/scale);    //填充拉升处理
+//                maxy=ceil(y/scale);    //填充拉升处理
 
-                if (prey!= -1)
-                {
-                    for (int k=prey;k<maxy;k++) {
-                        ptr->drawLine(QPointF(x0/scale, k),QPointF(x1/scale, k));
-                    }
-                }
+//                if (prey!= -1)
+//                {
+//                    for (int k=prey;k<maxy;k++) {
+//                        ptr->drawLine(QPointF(x0/scale, k),QPointF(x1/scale, k));
+//                    }
+//                }
 
-                prey=maxy;
+//                prey=maxy;
+                ptr->drawLine(QPointF(x0, y),QPointF(x1, y));
 
-
-                //ptr->restore();
+                ptr->restore();
             }
             arr.clear();
         }
@@ -378,7 +378,6 @@ int polygonInner::getMinY()
 }
 
 bool polygonInner::isInPolygon(QPoint p)
-
 {
     int scanLines;//扫描线数量
     int min;//最低扫描线号

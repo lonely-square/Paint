@@ -187,6 +187,7 @@ void PaintArea::chooseshape(QPoint pos){
 
     for (int i = 0; i < m_shapes.size(); i++) {
 
+        pos=pos/m_scale;
         if( m_shapes[i]->IsIn(pos) )  m_shapes[i]->ischoose=!m_shapes[i]->ischoose;
       }
 
@@ -715,6 +716,7 @@ void PaintArea::fillbyScan(QPoint beginPoint, QPoint endPoint, QImage &image){
 
     for(int i=0;i<m_shapes.size();i++)
     {
+        beginPoint=beginPoint/m_scale;
         if(m_shapes[i]->IsIn(beginPoint))
         {
             m_shapes[i]->DrawIt(&paint,pen.color(),m_scale);
@@ -1088,7 +1090,7 @@ void PaintArea::mousePressEvent(QMouseEvent *event)
             m_isDraw = false;
             m_movePoint = event->pos();
             //将第一个点传给容器，为了让最后一个点与第一个点在双击之后进行相连
-            pointList.push_back(pointList[0]);
+            pointList.push_back(pointList[0]/m_scale);
             polygon *polygon2 = new polygon;
             polygon2->pointList=pointList;
             polygon2->polygonInner = new polygonInner();
@@ -1130,7 +1132,7 @@ void PaintArea::mousePressEvent(QMouseEvent *event)
 
             if(m_drawShapeType == EnumDrawPolygon)
             {
-                pointList.push_back(m_beginPoint);
+                pointList.push_back(m_beginPoint/m_scale);
             }
             else if(m_drawShapeType == EnumTransShape)
             {
@@ -1201,8 +1203,8 @@ void PaintArea::mouseReleaseEvent(QMouseEvent *event)
 
          if (m_drawShapeType == EnumDrawLinecenter) {
             Linecenter *line = new Linecenter;
-            line->beginPoint = m_beginPoint;
-            line->endPoint = m_endPoint;
+            line->beginPoint = m_beginPoint/m_scale;
+            line->endPoint = m_endPoint/m_scale;
             line->ischoose = false;
             line->p=pen;
             line->width=pencil->width;
@@ -1219,8 +1221,8 @@ void PaintArea::mouseReleaseEvent(QMouseEvent *event)
         }
         else if (m_drawShapeType == EnumDrawLineBresenham) {
             LineBresenham *line = new LineBresenham;
-            line->beginPoint = m_beginPoint;
-            line->endPoint = m_endPoint;
+            line->beginPoint = m_beginPoint/m_scale;
+            line->endPoint = m_endPoint/m_scale;
             line->ischoose = false;
             line->p=pen;
             line->width=pencil->width;
@@ -1235,8 +1237,8 @@ void PaintArea::mouseReleaseEvent(QMouseEvent *event)
         }
         else if (m_drawShapeType == EnumDrawRect) {
             Rect *rect = new Rect;
-            rect->beginPoint = m_beginPoint;
-            rect->endPoint = m_endPoint;
+            rect->beginPoint = m_beginPoint/m_scale;
+            rect->endPoint = m_endPoint/m_scale;
             rect->ischoose = false;
             rect->p=pen;
             rect->width=pencil->width;
@@ -1246,8 +1248,8 @@ void PaintArea::mouseReleaseEvent(QMouseEvent *event)
         }
         else if (m_drawShapeType == EnumDrawCircle) {
             Circle *circle = new Circle;
-            circle->beginPoint = m_beginPoint;
-            circle->endPoint = m_endPoint;
+            circle->beginPoint = m_beginPoint/m_scale;
+            circle->endPoint = m_endPoint/m_scale;
             circle->ischoose = false;
             circle->p=pen;
             circle->width=pencil->width;
@@ -1257,8 +1259,8 @@ void PaintArea::mouseReleaseEvent(QMouseEvent *event)
         }
         else if (m_drawShapeType == EnumDrawEllipse) {
             ellipse *ellipse2 = new ellipse;
-            ellipse2->beginPoint = m_beginPoint;
-            ellipse2->endPoint = m_endPoint;
+            ellipse2->beginPoint = m_beginPoint/m_scale;
+            ellipse2->endPoint = m_endPoint/m_scale;
             ellipse2->ischoose = false;
             ellipse2->p=pen;
             ellipse2->width=pencil->width;
@@ -1281,8 +1283,8 @@ void PaintArea::mouseReleaseEvent(QMouseEvent *event)
         }
         else if (m_drawShapeType == EnumCohenSutherland) {
             CohenSutherlandd *cohensutherland = new CohenSutherlandd;
-            cohensutherland->beginPoint = m_beginPoint;
-            cohensutherland->endPoint = m_endPoint;
+            cohensutherland->beginPoint = m_beginPoint/m_scale;
+            cohensutherland->endPoint = m_endPoint/m_scale;
             m_cohenSutherlands.push_back(cohensutherland);
 
            // clear();
