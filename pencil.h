@@ -9,11 +9,9 @@ class Pencil
 {
 public:
     Pencil();
-
     void RectPen(QPainter *painter,QColor color,int width,int x, int y);
     void CirclePen(QPainter *painter,int x, int y);
-
-    static int width;
+    int width;
 
 };
 

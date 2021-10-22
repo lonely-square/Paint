@@ -409,12 +409,12 @@ void PaintWindow::onFillRectangle(){
 
 void PaintWindow::onDrawDashLine()
 {
-    m_paintArea->setLineShape(PaintArea::dashLine);
+    m_paintArea->setLineShape(Shape::dashLine);
 }
 
 void PaintWindow::onDrawDefaultLine()
 {
-    m_paintArea->setLineShape(PaintArea::defaultLine);
+    m_paintArea->setLineShape(Shape::defaultLine);
 }
 
 void PaintWindow::ShowPenColor()
@@ -432,10 +432,11 @@ void PaintWindow::ShowPenColor()
 void PaintWindow::ShowPenWidth(int value)
 {
     QColor color = penColorFrame->palette().color(QPalette::Window);
- Qt::PenStyle style = Qt::PenStyle(penStyleComboBox->itemData(
-        penStyleComboBox->currentIndex(),Qt::UserRole).toInt());
+    Qt::PenStyle style = Qt::PenStyle(penStyleComboBox->itemData(
+     penStyleComboBox->currentIndex(),Qt::UserRole).toInt());
 
  m_paintArea->setPen(QPen(color,1,style),value);
+    cout<<"change:"<<value<<endl;
 
 }
 

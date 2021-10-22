@@ -42,7 +42,7 @@ PaintArea::~PaintArea()
 
 void PaintArea::setPen(QPen p,int value)
 {
-    Pencil::width = value;
+    width = value;
     pen = p;
     update();
 
@@ -93,7 +93,7 @@ void PaintArea::setDrawShape(DrawShapeType drawShapeType)
     m_drawShapeType = drawShapeType;
     if( drawShapeType == EnumZoomShape | drawShapeType == EnumRotateShape) //因为是键盘事件
     {
-        qDebug() << "进入成功"<<endl;
+
         m_tmpImageTrans = QImage(1500, 750, QImage::Format_RGB32);
         m_imageBgColor = QColor(255, 255, 255);
         m_tmpImageTrans.fill(m_imageBgColor);
@@ -103,13 +103,13 @@ void PaintArea::setDrawShape(DrawShapeType drawShapeType)
         {
             if(!m_shapes[i]->ischoose)
             {
-                m_shapes[i]->DrawIt(&painter,m_shapes[i]->p.color(),m_scale);
+                m_shapes[i]->DrawIt(&painter,m_shapes[i]->p.color());
             }
         }
     }
 }
 
-void PaintArea::setLineShape(DrawLineType drawLinrType)
+void PaintArea::setLineShape(Shape::DrawLineType drawLinrType)
 {
     m_drawLineType=drawLinrType;
 }
@@ -196,510 +196,153 @@ void PaintArea::chooseshape(QPoint pos){
 
 
 
-void PaintArea::paintLinecenter(QPoint beginPoint, QPoint endPoint,QPen p,int width, QImage &image)
-{
-    QPainter paint(&image);
-    paint.setRenderHint(QPainter::Antialiasing, true);
-    paint.setPen(p);
-
-    if (m_drawLineType == dashLine)
-    {
-        int x0 = beginPoint.x()/ m_scale;
-        int y0 = beginPoint.y()/ m_scale;
-        int x1 = endPoint.x()/ m_scale;
-        int y1 = endPoint.y()/ m_scale;
-        int x = x0, y = y0;
-        int a = y0 - y1, b = x1 - x0;
-        int cx = (b >= 0 ? 1 : (b = -b, -1));
-        int cy = (a <= 0 ? 1 : (a = -a, -1));
-
-        int brokenFlag=0;
-
-        if ( brokenFlag%(width*6) >width*0 && brokenFlag%(width*6) < width*4 ) pencil->CirclePen(&paint,x,y);
-
-        int d, d1, d2;
-        if (-a <= b)		// 斜率绝对值 <= 1
-        {
-            d = 2 * a + b;
-            d1 = 2 * a;
-            d2 = 2 * (a + b);
-            while(x != x1)
-            {
-                if (d < 0)
-                    y += cy, d += d2;
-                else
-                    d += d1;
-                x += cx;
-
-                brokenFlag++;
-                if ( brokenFlag%(width*6) >0 && brokenFlag%(width*6) < width*4 )
-                pencil->CirclePen(&paint,x,y);
-
-
-            }
-        }
-        else				// 斜率绝对值 > 1
-        {
-            d = 2 * b + a;
-            d1 = 2 * b;
-            d2 = 2 * (a + b);
-            while(y != y1)
-            {
-                if(d < 0)
-                    d += d1;
-                else
-                    x += cx, d += d2;
-                y += cy;
-
-                brokenFlag++;
-               if ( brokenFlag%(width*6) >0 && brokenFlag%(width*6) < width*4 )
-                   pencil->CirclePen(&paint,x,y);
-
-            }
-        }
-
-    }
-    else if (m_drawLineType == defaultLine) {
-
-        {
-            int x0 = beginPoint.x()/ m_scale;
-            int y0 = beginPoint.y()/ m_scale;
-            int x1 = endPoint.x()/ m_scale;
-            int y1 = endPoint.y()/ m_scale;
-            int x = x0, y = y0;
-            int a = y0 - y1, b = x1 - x0;
-            int cx = (b >= 0 ? 1 : (b = -b, -1));
-            int cy = (a <= 0 ? 1 : (a = -a, -1));
-
-            int brokenFlag=0;
-
-
-            pencil->CirclePen(&paint,x,y);
-
-            int d, d1, d2;
-            if (-a <= b)		// 斜率绝对值 <= 1
-            {
-                d = 2 * a + b;
-                d1 = 2 * a;
-                d2 = 2 * (a + b);
-                while(x != x1)
-                {
-                    if (d < 0)
-                        y += cy, d += d2;
-                    else
-                        d += d1;
-                    x += cx;
-
-                    brokenFlag++;
-
-
-                   pencil->CirclePen(&paint,x,y);
-
-
-                }
-            }
-            else				// 斜率绝对值 > 1
-            {
-                d = 2 * b + a;
-                d1 = 2 * b;
-                d2 = 2 * (a + b);
-                while(y != y1)
-                {
-                    if(d < 0)
-                        d += d1;
-                    else
-                        x += cx, d += d2;
-                    y += cy;
-
-                    brokenFlag++;
-
-                       pencil->CirclePen(&paint,x,y);
-
-                }
-            }
-
-        }
-
-    }
-    m_isModify = true;
-}
 
 void PaintArea::paintLineBresenham(QPoint beginPoint, QPoint endPoint,QPen p,int width, QImage &image)
 {
 
-    QPainter paint(&image);
-    paint.setRenderHint(QPainter::Antialiasing, true);
-    paint.setPen(p);
-
-    if (m_drawLineType == dashLine)
-        {
-        int x0 = beginPoint.x()/ m_scale;
-        int y0 = beginPoint.y()/ m_scale;
-        int x1 = endPoint.x()/ m_scale;
-        int y1 = endPoint.y()/ m_scale;
-
-        int dx = x1 - x0;//x偏移量
-        int dy = y1 - y0;//y偏移量
-        int ux = dx >0 ? 1 : -1;//x伸展方向
-        int uy = dy >0 ? 1 : -1;//y伸展方向
-        int dx2 = abs(dx << 1);//x偏移量乘2
-        int dy2 = abs(dy << 1);//y偏移量乘2
-        int brokenFlag = 0;
-        if (abs(dx)>abs(dy))//以x为增量方向计算
-        {
-            int e = -dx; //e = -0.5 * 2 * dx,把e 用2 * dx* e替换
-            int x = x0;//起点x坐标
-            int y = y0;//起点y坐标
-            while (x!=x1+ux)
-            {
-                brokenFlag++;
-                if ( brokenFlag%(width*6) >width*0 && brokenFlag%(width*6) < width*4 )
-                pencil->CirclePen(&paint,x,y);
-                e = e + dy2;//来自 2*e*dx= 2*e*dx + 2dy  （原来是 e = e + k）
-                if (e > 0)//e是整数且大于0时表示要取右上的点（否则是右下的点）
-                {
-                    if (y!=y1)
-                    {
-                        y += uy;
-                    }
-                    e = e - dx2;//2*e*dx = 2*e*dx - 2*dx  (原来是 e = e -1)
-                }
-                x += ux;
-            }
-        }
-        else
-        {//以y为增量方向计算
-            int e = -dy; //e = -0.5 * 2 * dy,把e 用2 * dy* e替换
-            int x = x0;//起点x坐标
-            int y = y0;//起点y坐标
-            while (y!=y1+uy)
-            {
-                brokenFlag++;
-                if ( brokenFlag%(width*6) >width*0 && brokenFlag%(width*6) < width*4 )
-                pencil->CirclePen(&paint,x,y);
-                e = e + dx2;//来自 2*e*dy= 2*e*dy + 2dy  （原来是 e = e + k）
-                if (e > 0)//e是整数且大于0时表示要取右上的点（否则是右下的点）
-                {
-                    if (x!=x1)
-                    {
-                        x += ux;
-                    }
-                    e = e - dy2;//2*e*dy = 2*e*dy - 2*dy  (原来是 e = e -1)
-                }
-                y += uy;
-            }
-        }
-    }
-    else if  (m_drawLineType == defaultLine)
-    {
-    int x0 = beginPoint.x()/ m_scale;
-    int y0 = beginPoint.y()/ m_scale;
-    int x1 = endPoint.x()/ m_scale;
-    int y1 = endPoint.y()/ m_scale;
-
-    int dx = x1 - x0;//x偏移量
-    int dy = y1 - y0;//y偏移量
-    int ux = dx >0 ? 1 : -1;//x伸展方向
-    int uy = dy >0 ? 1 : -1;//y伸展方向
-    int dx2 = abs(dx << 1);//x偏移量乘2
-    int dy2 = abs(dy << 1);//y偏移量乘2
-    if (abs(dx)>abs(dy))//以x为增量方向计算
-    {
-        int e = -dx; //e = -0.5 * 2 * dx,把e 用2 * dx* e替换
-        int x = x0;//起点x坐标
-        int y = y0;//起点y坐标
-        while (x!=x1+ux)
-        {
-            pencil->CirclePen(&paint,x,y);
-            e = e + dy2;//来自 2*e*dx= 2*e*dx + 2dy  （原来是 e = e + k）
-            if (e > 0)//e是整数且大于0时表示要取右上的点（否则是右下的点）
-            {
-                if (y!=y1)
-                {
-                    y += uy;
-                }
-                e = e - dx2;//2*e*dx = 2*e*dx - 2*dx  (原来是 e = e -1)
-            }
-            x += ux;
-        }
-    }
-    else
-    {//以y为增量方向计算
-        int e = -dy; //e = -0.5 * 2 * dy,把e 用2 * dy* e替换
-        int x = x0;//起点x坐标
-        int y = y0;//起点y坐标
-        while (y!=y1+uy)
-        {
-
-            pencil->CirclePen(&paint,x,y);
-            e = e + dx2;//来自 2*e*dy= 2*e*dy + 2dy  （原来是 e = e + k）
-            if (e > 0)//e是整数且大于0时表示要取右上的点（否则是右下的点）
-            {
-                if (x!=x1)
-                {
-                    x += ux;
-                }
-                e = e - dy2;//2*e*dy = 2*e*dy - 2*dy  (原来是 e = e -1)
-            }
-            y += uy;
-        }
-    }
-}
-
-    m_isModify = true;
-}
+          Pencil* pencil = new Pencil();
+           pencil->width = width;
+           QPainter paint(&image);
+           paint.setPen(pen);
 
 
-void PaintArea::paintRect(QPoint beginPoint, QPoint endPoint,QPen p,int width, QImage &image)
-{
+       if (m_drawLineType == Shape::dashLine)
+           {
 
+           int x0 = beginPoint.x()/ m_scale;
+           int y0 = beginPoint.y()/ m_scale;
+           int x1 = endPoint.x()/ m_scale;
+           int y1 = endPoint.y()/ m_scale;
 
+           int dx = x1 - x0;//x偏移量
+           int dy = y1 - y0;//y偏移量
+           int ux = dx >0 ? 1 : -1;//x伸展方向
+           int uy = dy >0 ? 1 : -1;//y伸展方向
+           int dx2 = abs(dx << 1);//x偏移量乘2
+           int dy2 = abs(dy << 1);//y偏移量乘2
+           int brokenFlag = 0;
 
-    paintLinecenter(beginPoint,QPoint(endPoint.x(),beginPoint.y()),p,width,image);
-    paintLinecenter(beginPoint,QPoint(beginPoint.x(),endPoint.y()),p,width,image);
-    paintLinecenter(endPoint,QPoint(beginPoint.x(),endPoint.y()),p,width,image);
-    paintLinecenter(endPoint,QPoint(endPoint.x(),beginPoint.y()),p,width,image);
+           if (abs(dx)>abs(dy))//以x为增量方向计算
+           {
+               int e = -dx; //e = -0.5 * 2 * dx,把e 用2 * dx* e替换
+               int x = x0;//起点x坐标
+               int y = y0;//起点y坐标
+               while (x!=x1+ux)
+               {
+                   brokenFlag++;
+                   if ( brokenFlag%(width*6) >width*0 && brokenFlag%(width*6) < width*4 )
 
+                   pencil->CirclePen(&paint,x,y);
 
-
-    m_isModify = true;
-}
-
-
-
-
-void PaintArea::paintCircle(QPoint beginPoint, QPoint endPoint,QPen p,int width, QImage &image)
-{
-    QPainter paint(&image);
-    paint.setRenderHint(QPainter::Antialiasing, true);//反锯齿功能
-    paint.setPen(p);
-
-
-    int x, y, w,h, xc,yc;
-    double e,r;
-
-    x = beginPoint.x() / m_scale;
-    y = beginPoint.y() / m_scale;
-    w = endPoint.x() / m_scale;
-    h = endPoint.y() / m_scale;
-    r= sqrt((w-x)*(w-x)+(h-y)*(h-y));
-    xc=x;yc=y;
-    x=0;y=r;
-    e=1-r;
-
-    if (m_drawLineType == defaultLine)
-    {
-        pencil->CirclePen(&paint,x+xc,y+yc);
-        pencil->CirclePen(&paint,-x+xc,-y+yc);
-        pencil->CirclePen(&paint,y+xc,x+yc);
-        pencil->CirclePen(&paint,-y+xc,-x+yc);
-        pencil->CirclePen(&paint,x+xc,-y+yc);
-        pencil->CirclePen(&paint,-x+xc,y+yc);
-        pencil->CirclePen(&paint,-y+xc,x+yc);
-        pencil->CirclePen(&paint,y+xc,-x+yc);
-        while(x<=y)
-         {     if(e<0)   e+=2*x+3;
-                  else   { e+=2*(x-y)+5; y--;}
-                  x++;
-                  pencil->CirclePen(&paint,x+xc,y+yc);
-                  pencil->CirclePen(&paint,-x+xc,-y+yc);
-                  pencil->CirclePen(&paint,y+xc,x+yc);
-                  pencil->CirclePen(&paint,-y+xc,-x+yc);
-                  pencil->CirclePen(&paint,x+xc,-y+yc);
-                  pencil->CirclePen(&paint,-x+xc,y+yc);
-                  pencil->CirclePen(&paint,-y+xc,x+yc);
-                  pencil->CirclePen(&paint,y+xc,-x+yc);
-                       // 画八分对称性的其他点
-          }
-    }
-    else if (m_drawLineType == dashLine) {
-        int brokenFlag = 0;
-
-
-        if ( brokenFlag%(width*6) >width*0 && brokenFlag%(width*6) < width*4 )
-        {
-        pencil->CirclePen(&paint,x+xc,y+yc);
-        pencil->CirclePen(&paint,-x+xc,-y+yc);
-        pencil->CirclePen(&paint,y+xc,x+yc);
-        pencil->CirclePen(&paint,-y+xc,-x+yc);
-        pencil->CirclePen(&paint,x+xc,-y+yc);
-        pencil->CirclePen(&paint,-x+xc,y+yc);
-        pencil->CirclePen(&paint,-y+xc,x+yc);
-        pencil->CirclePen(&paint,y+xc,-x+yc);
-        }
-
-        while(x<=y)
-         {     if(e<0)   e+=2*x+3;
-                  else   { e+=2*(x-y)+5; y--;}
-                  x++;
-                  brokenFlag++;
-                  if ( brokenFlag%(width*6) >width*0 && brokenFlag%(width*6) < width*4 )
-                  {
-                      pencil->CirclePen(&paint,x+xc,y+yc);
-                      pencil->CirclePen(&paint,-x+xc,-y+yc);
-                      pencil->CirclePen(&paint,y+xc,x+yc);
-                      pencil->CirclePen(&paint,-y+xc,-x+yc);
-                      pencil->CirclePen(&paint,x+xc,-y+yc);
-                      pencil->CirclePen(&paint,-x+xc,y+yc);
-                      pencil->CirclePen(&paint,-y+xc,x+yc);
-                      pencil->CirclePen(&paint,y+xc,-x+yc);
-                  }
-
-                       // 画八分对称性的其他点
-          }
-    }
-
-
-
-    m_isModify = true;
-}
-
-void PaintArea::paintEllipse(QPoint beginPoint, QPoint endPoint,QPen p,int width, QImage &image)
-{
-    QPainter paint(&image);
-        paint.setPen(p);
-
-        int x, y, w, h,a,b,xc,yc;
-        float d1,d2;
-        x = beginPoint.x() / m_scale;
-        y = beginPoint.y() / m_scale;
-        w = endPoint.x() / m_scale;
-        h = endPoint.y() / m_scale;
-        xc=x;yc=y;
-        if(x>w) a=x-w;
-        else a=w-x;
-        if(y>h)b=y-h;
-        else b=h-y;
-        x=0;y=b;
-        d1 = b * b + a * a * (-b + 0.25);
-
-        if (m_drawLineType == defaultLine)
-        {
-
-        pencil->CirclePen(&paint,x+xc,y+yc);
-        pencil->CirclePen(&paint,x-xc,y+yc);
-        pencil->CirclePen(&paint,x+xc,y-yc);
-        pencil->CirclePen(&paint,x-xc,y-yc);
-
-        while (b * b * (x + 1) < a * a * (y - 0.5))
-        {
-            if (d1 < 0)
-            {
-                d1 += b * b * (2 * x + 3);
-                x++;
-            }
-            else
-            {
-                d1 += (b * b * (2 * x + 3) + a * a * (-2 * y + 2));
-                x++;
-                y--;
-            }
-
-
-            pencil->CirclePen(&paint,x+xc,y+yc);
-            pencil->CirclePen(&paint,x+xc,-y+yc);
-            pencil->CirclePen(&paint,-x+xc,y+yc);
-            pencil->CirclePen(&paint,-x+xc,-y+yc);
-
-
-        }
-        d2 = sqrt(b * (x + 0.5)) + sqrt(a * (y - 1)) - sqrt(a * b);
-        while (y > 0)
-        {
-            if (d2 < 0)
-            {
-                d2 += b * b * (2 * x + 2) + a * a * (-2 * y + 3);
-                x++;
-                y--;
-            }
-            else
-            {
-                d2 += a * a * (-2 * y + 3);
-                y--;
-            }
-
-            pencil->CirclePen(&paint,x+xc,y+yc);
-            pencil->CirclePen(&paint,x+xc,-y+yc);
-            pencil->CirclePen(&paint,-x+xc,y+yc);
-            pencil->CirclePen(&paint,-x+xc,-y+yc);
-        }
+                   e = e + dy2;//来自 2*e*dx= 2*e*dx + 2dy  （原来是 e = e + k）
+                   if (e > 0)//e是整数且大于0时表示要取右上的点（否则是右下的点）
+                   {
+                       if (y!=y1)
+                       {
+                           y += uy;
+                       }
+                       e = e - dx2;//2*e*dx = 2*e*dx - 2*dx  (原来是 e = e -1)
+                   }
+                   x += ux;
+               }
+           }
+           else
+           {//以y为增量方向计算
+               int e = -dy; //e = -0.5 * 2 * dy,把e 用2 * dy* e替换
+               int x = x0;//起点x坐标
+               int y = y0;//起点y坐标
+               while (y!=y1+uy)
+               {
+                   brokenFlag++;
+                   if ( brokenFlag%(width*6) >width*0 && brokenFlag%(width*6) < width*4 )
+                   pencil->CirclePen(&paint,x,y);
+                   e = e + dx2;//来自 2*e*dy= 2*e*dy + 2dy  （原来是 e = e + k）
+                   if (e > 0)//e是整数且大于0时表示要取右上的点（否则是右下的点）
+                   {
+                       if (x!=x1)
+                       {
+                           x += ux;
+                       }
+                       e = e - dy2;//2*e*dy = 2*e*dy - 2*dy  (原来是 e = e -1)
+                   }
+                   y += uy;
+               }
+           }
        }
-        else if (m_drawLineType == dashLine) {
-            int brokenFlag = 0;
-            if ( brokenFlag%(width*6) >width*0 && brokenFlag%(width*6) < width*4 )
-            {
-                pencil->CirclePen(&paint,x+xc,y+yc);
-                pencil->CirclePen(&paint,x-xc,y+yc);
-                pencil->CirclePen(&paint,x+xc,y-yc);
-                pencil->CirclePen(&paint,x-xc,y-yc);
+       else if  (m_drawLineType == Shape::defaultLine)
+       {
+       int x0 = beginPoint.x()/ m_scale;
+       int y0 = beginPoint.y()/ m_scale;
+       int x1 = endPoint.x()/ m_scale;
+       int y1 = endPoint.y()/ m_scale;
 
-            }
+       int dx = x1 - x0;//x偏移量
+       int dy = y1 - y0;//y偏移量
+       int ux = dx >0 ? 1 : -1;//x伸展方向
+       int uy = dy >0 ? 1 : -1;//y伸展方向
+       int dx2 = abs(dx << 1);//x偏移量乘2
+       int dy2 = abs(dy << 1);//y偏移量乘2
+       if (abs(dx)>abs(dy))//以x为增量方向计算
+       {
+           int e = -dx; //e = -0.5 * 2 * dx,把e 用2 * dx* e替换
+           int x = x0;//起点x坐标
+           int y = y0;//起点y坐标
+           while (x!=x1+ux)
+           {
+               pencil->CirclePen(&paint,x,y);
+               e = e + dy2;//来自 2*e*dx= 2*e*dx + 2dy  （原来是 e = e + k）
+               if (e > 0)//e是整数且大于0时表示要取右上的点（否则是右下的点）
+               {
+                   if (y!=y1)
+                   {
+                       y += uy;
+                   }
+                   e = e - dx2;//2*e*dx = 2*e*dx - 2*dx  (原来是 e = e -1)
+               }
+               x += ux;
+           }
+       }
+       else
+       {//以y为增量方向计算
+           int e = -dy; //e = -0.5 * 2 * dy,把e 用2 * dy* e替换
+           int x = x0;//起点x坐标
+           int y = y0;//起点y坐标
+           while (y!=y1+uy)
+           {
 
-            while (b * b * (x + 1) < a * a * (y - 0.5))
-            {
-                if (d1 < 0)
-                {
-                    d1 += b * b * (2 * x + 3);
-                    x++;
-                }
-                else
-                {
-                    d1 += (b * b * (2 * x + 3) + a * a * (-2 * y + 2));
-                    x++;
-                    y--;
-                }
-                brokenFlag++;
-                if ( brokenFlag%(width*6) >width*0 && brokenFlag%(width*6) < width*4 )
-                {
-                pencil->CirclePen(&paint,x+xc,y+yc);
-                pencil->CirclePen(&paint,x+xc,-y+yc);
-                pencil->CirclePen(&paint,-x+xc,y+yc);
-                pencil->CirclePen(&paint,-x+xc,-y+yc);
-                }
+               pencil->CirclePen(&paint,x,y);
+               e = e + dx2;//来自 2*e*dy= 2*e*dy + 2dy  （原来是 e = e + k）
+               if (e > 0)//e是整数且大于0时表示要取右上的点（否则是右下的点）
+               {
+                   if (x!=x1)
+                   {
+                       x += ux;
+                   }
+                   e = e - dy2;//2*e*dy = 2*e*dy - 2*dy  (原来是 e = e -1)
+               }
+               y += uy;
+           }
+       }
+   }
 
-            }
-            d2 = sqrt(b * (x + 0.5)) + sqrt(a * (y - 1)) - sqrt(a * b);
-            while (y > 0)
-            {
-                if (d2 < 0)
-                {
-                    d2 += b * b * (2 * x + 2) + a * a * (-2 * y + 3);
-                    x++;
-                    y--;
-                }
-                else
-                {
-                    d2 += a * a * (-2 * y + 3);
-                    y--;
-                }
-
-                brokenFlag++;
-                if ( brokenFlag%(width*6) >width*0 && brokenFlag%(width*6) < width*4 )
-                {
-                pencil->CirclePen(&paint,x+xc,y+yc);
-                pencil->CirclePen(&paint,x+xc,-y+yc);
-                pencil->CirclePen(&paint,-x+xc,y+yc);
-                pencil->CirclePen(&paint,-x+xc,-y+yc);
-                }
-            }
-
-          }
-
-        m_isModify = true;
+    m_isModify = true;
 }
 
-void PaintArea::paintPolygon(QVector<QPoint> pointList,QPen p,int width, QImage &image)
+
+
+void PaintArea::paintPolygon(QVector<QPoint> pointList,QPen p, QImage &image)
 {
+
            for(int i = 0; i<pointList.size()-1; i++)//画出前面的
            {
 
-               paintLinecenter(QPoint(pointList[i].x(), pointList[i].y()), QPoint(pointList[i+1].x(), pointList[i+1].y()),p,width,image);
+               PaintArea::paintLineBresenham(QPoint(pointList[i].x(), pointList[i].y()), QPoint(pointList[i+1].x(), pointList[i+1].y()),p,width,image);
            }
 
            if(m_isMove&&pointList.size()>0)
            {
 
-               paintLinecenter(QPoint(pointList[pointList.size()-1].x(), pointList[pointList.size()-1].y()), m_movePoint,p,width,image);
+               PaintArea::paintLineBresenham(QPoint(pointList[pointList.size()-1].x(), pointList[pointList.size()-1].y()), m_movePoint,p,width,image);
            }
 
 
@@ -719,7 +362,7 @@ void PaintArea::fillbyScan(QPoint beginPoint, QPoint endPoint, QImage &image){
         beginPoint=beginPoint/m_scale;
         if(m_shapes[i]->IsIn(beginPoint))
         {
-            m_shapes[i]->DrawIt(&paint,pen.color(),m_scale);
+            m_shapes[i]->DrawIt(&paint,pen.color());
         }
     }
 
@@ -831,7 +474,7 @@ void PaintArea::CohenSutherland(float x1,float y1,float x2,float y2,float xmin,f
        //完全在窗口内的情况
        if((code1|code2)==0) {
            QPoint begin(x1,y1),end(x2,y2);
-           paintLineBresenham(begin,end,pen,pencil->width,image);
+           paintLineBresenham(begin,end,pen,width,image);
            return ;
        }
        //完全在窗口外的情况
@@ -909,7 +552,7 @@ void PaintArea::Middleland(float x1,float y1,float x2,float y2,float xmin,float 
        //完全在窗口内的情况
        if((code1|code2)==0) {
            QPoint begin(x1,y1),end(x2,y2);
-           paintLineBresenham(begin,end,pen,pencil->width,image);
+           paintLineBresenham(begin,end,pen,width,image);
            return ;
        }
        //完全在窗口外的情况
@@ -960,7 +603,7 @@ void PaintArea::Middleland(float x1,float y1,float x2,float y2,float xmin,float 
            }
            x1=x3;y1=y3;
            QPoint begin(x1,y1),end(x2,y2);
-           paintLineBresenham(begin,end,pen,pencil->width,image);
+           paintLineBresenham(begin,end,pen,width,image);
 
            return;
 }
@@ -975,7 +618,7 @@ void PaintArea::paintTrans(QImage &image)
         {
             paint.setPen(m_shapes[i]->p);
             m_shapes[i]->translation(deltaPoint.x(),deltaPoint.y());
-            m_shapes[i]->DrawIt(&paint,m_shapes[i]->p.color(),m_scale);
+            m_shapes[i]->DrawIt(&paint,m_shapes[i]->p.color());
         }
     }
 }
@@ -989,7 +632,7 @@ void PaintArea::paintRotate(double thita,QImage &image)
         {
             paint.setPen(m_shapes[i]->p);
             m_shapes[i]->rotate(thita);
-            m_shapes[i]->DrawIt(&paint,m_shapes[i]->p.color(),m_scale);
+            m_shapes[i]->DrawIt(&paint,m_shapes[i]->p.color());
         }
         qDebug() << "画转了"<<endl;
     }
@@ -1004,7 +647,7 @@ void PaintArea::paintZoom(double x,double y,QImage &image)
         {
             paint.setPen(m_shapes[i]->p);
             m_shapes[i]->zoom(x,y);
-            m_shapes[i]->DrawIt(&paint,m_shapes[i]->p.color(),m_scale);
+            m_shapes[i]->DrawIt(&paint,m_shapes[i]->p.color());
         }
     }
 }
@@ -1014,23 +657,17 @@ void PaintArea::paintZoom(double x,double y,QImage &image)
 void PaintArea::paintImage(QImage &image)
 {
 
-     if (m_drawShapeType == EnumDrawLinecenter) {
-        paintLinecenter(m_beginPoint, m_endPoint,pen,pencil->width, image);
-    }
-    else if (m_drawShapeType == EnumDrawLineBresenham) {
-        paintLineBresenham(m_beginPoint, m_endPoint,pen,pencil->width, image);
-    }
-    else if (m_drawShapeType == EnumDrawRect) {
-        paintRect(m_beginPoint, m_endPoint,pen,pencil->width, image);
-    }
-    else if (m_drawShapeType == EnumDrawCircle) {
-        paintCircle(m_beginPoint, m_endPoint,pen,pencil->width, image);
-    }
-    else if (m_drawShapeType == EnumDrawEllipse) {
-        paintEllipse(m_beginPoint, m_endPoint,pen,pencil->width,image);
+     if (m_drawShapeType == EnumDrawEllipse|m_drawShapeType == EnumDrawCircle|m_drawShapeType == EnumDrawLinecenter | m_drawShapeType == EnumDrawLineBresenham | m_drawShapeType == EnumDrawRect|m_drawShapeType == EnumDrawRect) {
+
+        m_currShapes->setEndPoint(m_endPoint/m_scale);
+        QPainter paint(&image);
+        m_currShapes->DrawIt(&paint,pen.color());
+        m_isModify = true;
     }
     else if (m_drawShapeType == EnumDrawPolygon) {
-        paintPolygon(pointList,pen,pencil->width,image);
+
+
+         paintPolygon(pointList,pen,image);
     }
     else if (m_drawShapeType == EnumScanFill) {
         fillbyScan(m_beginPoint, m_endPoint, image);
@@ -1039,13 +676,12 @@ void PaintArea::paintImage(QImage &image)
          QColor color=image.pixel(m_beginPoint);
         fillbySeed(m_beginPoint, pen.color(), color, image);
     }
-    else if(m_drawShapeType == EnumCohenSutherland)
+    else if(m_drawShapeType == EnumCohenSutherland | m_drawShapeType == EnumCutLineCenter)
     {
-        paintRect(m_beginPoint, m_endPoint,QPen(QColor(255,0,0)),2 ,m_tmpImage);
-    }
-    else if(m_drawShapeType == EnumCutLineCenter)
-    {
-        paintRect(m_beginPoint, m_endPoint,QPen(QColor(255,0,0)),2 ,m_tmpImage);
+         m_assistShapes->setEndPoint(m_endPoint/m_scale);
+         QPainter paint(&m_tmpImage);
+         m_assistShapes->DrawIt(&paint,QColor(255,0,0));
+         m_isModify = true;
     }
      else if (m_drawShapeType == EnumTransShape) {
          paintTrans(image);
@@ -1056,7 +692,6 @@ void PaintArea::paintImage(QImage &image)
      else if (m_drawShapeType == EnumRotateShape) {
          paintRotate(thita,image);
      }
-
 
     update();
 }
@@ -1090,7 +725,10 @@ void PaintArea::mousePressEvent(QMouseEvent *event)
             m_isDraw = false;
             m_movePoint = event->pos();
             //将第一个点传给容器，为了让最后一个点与第一个点在双击之后进行相连
-            pointList.push_back(pointList[0]/m_scale);
+
+
+            pointList.push_back(pointList[0]);
+
             polygon *polygon2 = new polygon;
             polygon2->pointList=pointList;
             polygon2->polygonInner = new polygonInner();
@@ -1098,16 +736,17 @@ void PaintArea::mousePressEvent(QMouseEvent *event)
             polygon2->polygonInner->showPolygonInEdgeTable();
 
             polygon2->p=pen;
-            polygon2->width=pencil->width;
+            polygon2->width=width;
             polygon2->setcenter();
             m_shapes.push_back(polygon2);
+
             paintImage(m_image);
 
             pointList.pop_back();
             Bezier *Bezier2 = new Bezier;
             Bezier2->fixPoints = pointList;
             Bezier2->create();
-            Bezier2->width = pencil->width;
+            Bezier2->width = width;
             Bezier2->p = pen;
             m_shapes.push_back(Bezier2);
 
@@ -1130,11 +769,13 @@ void PaintArea::mousePressEvent(QMouseEvent *event)
             m_endPoint = event->pos();
             m_isDraw = true;
 
-            if(m_drawShapeType == EnumDrawPolygon)
+           if(m_drawShapeType == EnumDrawPolygon)
             {
-                pointList.push_back(m_beginPoint/m_scale);
+
+               pointList.push_back(m_beginPoint);
+
             }
-            else if(m_drawShapeType == EnumTransShape)
+           else if(m_drawShapeType == EnumTransShape)
             {
                m_tmpImageTrans = QImage(1500, 750, QImage::Format_RGB32);
                m_imageBgColor = QColor(255, 255, 255);
@@ -1145,11 +786,108 @@ void PaintArea::mousePressEvent(QMouseEvent *event)
                {
                    if(!m_shapes[i]->ischoose)
                    {
-                       m_shapes[i]->DrawIt(&painter,m_shapes[i]->p.color(),m_scale);
+                       m_shapes[i]->DrawIt(&painter,m_shapes[i]->p.color());
                    }
                }
 
             }
+           else if (m_drawShapeType == EnumDrawLinecenter) {
+               Linecenter *line = new Linecenter;
+               line->beginPoint = m_beginPoint/m_scale;
+               line->endPoint = m_endPoint/m_scale;
+               line->ischoose = false;
+               line->p=pen;
+               line->width=width;
+               line->m_drawLineType=m_drawLineType;
+               line->setcenter();
+
+               m_currShapes=line;
+
+           }
+           else if (m_drawShapeType == EnumDrawLineBresenham) {
+               LineBresenham *line = new LineBresenham;
+               line->beginPoint = m_beginPoint/m_scale;
+               line->endPoint = m_endPoint/m_scale;
+               line->ischoose = false;
+               line->p=pen;
+               line->m_drawLineType=m_drawLineType;
+               line->width=width;
+               line->setcenter();
+
+
+               m_currShapes=line;
+
+           }
+           else if (m_drawShapeType == EnumDrawRect) {
+
+               Rect *rect = new Rect;
+               rect->beginPoint = m_beginPoint/m_scale;
+               rect->endPoint = m_endPoint/m_scale;
+               rect->ischoose = false;
+               rect->p=pen;
+               rect->width=width;
+               rect->m_drawLineType=m_drawLineType;
+               rect->setcenter();
+
+
+               m_currShapes=rect;
+
+           }
+           else if (m_drawShapeType == EnumDrawCircle) {
+               Circle *circle = new Circle;
+               circle->beginPoint = m_beginPoint/m_scale;
+               circle->endPoint = m_endPoint/m_scale;
+               circle->ischoose = false;
+               circle->p=pen;
+               circle->width=width;
+               circle->m_drawLineType=m_drawLineType;
+               circle->setcenter();
+
+
+               m_currShapes=circle;
+
+           }
+           else if (m_drawShapeType == EnumDrawEllipse) {
+               ellipse *ellipse2 = new ellipse;
+               ellipse2->beginPoint = m_beginPoint/m_scale;
+               ellipse2->endPoint = m_endPoint/m_scale;
+               ellipse2->ischoose = false;
+               ellipse2->p=pen;
+               ellipse2->width=width;
+               ellipse2->m_drawLineType=m_drawLineType;
+               ellipse2->setcenter();
+
+
+               m_currShapes=ellipse2;
+
+           }
+           else if (m_drawShapeType == EnumCohenSutherland) {
+                Rect *rect = new Rect;
+                rect->beginPoint = m_beginPoint/m_scale;
+                rect->endPoint = m_endPoint/m_scale;
+                rect->ischoose = false;
+                rect->p=pen;
+                rect->width=width;
+                rect->m_drawLineType=m_drawLineType;
+                rect->setcenter();
+
+                m_assistShapes=rect;
+
+           }
+           else if (m_drawShapeType == EnumCutLineCenter) {
+                Rect *rect = new Rect;
+                rect->beginPoint = m_beginPoint/m_scale;
+                rect->endPoint = m_endPoint/m_scale;
+                rect->ischoose = false;
+                rect->width=width;
+                rect->m_drawLineType=m_drawLineType;
+                rect->width=width;
+                rect->m_drawLineType=m_drawLineType;
+                rect->setcenter();
+
+                m_assistShapes=rect;
+           }
+
         }
     }
 }
@@ -1162,16 +900,13 @@ void PaintArea::mouseMoveEvent(QMouseEvent *event)
     {
             if (m_drawShapeType == EnumDrawPolygon)
                     {
-
                          m_isMove = true;
-
                     }
             else if (m_drawShapeType == EnumTransShape) {
 
                 deltaPoint = m_endPoint;
                 m_endPoint = event->pos();
                 deltaPoint = m_endPoint -deltaPoint;
-
 
 
                 m_tmpImage = m_tmpImageTrans;
@@ -1201,92 +936,28 @@ void PaintArea::mouseReleaseEvent(QMouseEvent *event)
         m_endPoint = event->pos();
         m_isDraw = false;
 
-         if (m_drawShapeType == EnumDrawLinecenter) {
-            Linecenter *line = new Linecenter;
-            line->beginPoint = m_beginPoint/m_scale;
-            line->endPoint = m_endPoint/m_scale;
-            line->ischoose = false;
-            line->p=pen;
-            line->width=pencil->width;
-            line->setcenter();
-            m_shapes.push_back(line);
+         if (m_drawShapeType == EnumDrawLinecenter | m_drawShapeType == EnumDrawLineBresenham) {
 
-
-
+            m_currShapes->setEndPoint(m_endPoint/m_scale);
+            m_shapes.push_back(m_currShapes);
 
             struct Line ln;
             ln.beginPoint=m_beginPoint;
             ln.endPoint=m_endPoint;
             ll1.push_back(ln);
         }
-        else if (m_drawShapeType == EnumDrawLineBresenham) {
-            LineBresenham *line = new LineBresenham;
-            line->beginPoint = m_beginPoint/m_scale;
-            line->endPoint = m_endPoint/m_scale;
-            line->ischoose = false;
-            line->p=pen;
-            line->width=pencil->width;
-            line->setcenter();
-            m_shapes.push_back(line);
+        else if (m_drawShapeType == EnumDrawRect | m_drawShapeType == EnumDrawCircle|m_drawShapeType == EnumDrawEllipse) {
 
-
-            struct Line ln;
-            ln.beginPoint=m_beginPoint;
-            ln.endPoint=m_endPoint;
-            ll1.push_back(ln);
-        }
-        else if (m_drawShapeType == EnumDrawRect) {
-            Rect *rect = new Rect;
-            rect->beginPoint = m_beginPoint/m_scale;
-            rect->endPoint = m_endPoint/m_scale;
-            rect->ischoose = false;
-            rect->p=pen;
-            rect->width=pencil->width;
-            rect->setcenter();
-            m_shapes.push_back(rect);
-
-        }
-        else if (m_drawShapeType == EnumDrawCircle) {
-            Circle *circle = new Circle;
-            circle->beginPoint = m_beginPoint/m_scale;
-            circle->endPoint = m_endPoint/m_scale;
-            circle->ischoose = false;
-            circle->p=pen;
-            circle->width=pencil->width;
-            circle->setcenter();
-            m_shapes.push_back(circle);
-
-        }
-        else if (m_drawShapeType == EnumDrawEllipse) {
-            ellipse *ellipse2 = new ellipse;
-            ellipse2->beginPoint = m_beginPoint/m_scale;
-            ellipse2->endPoint = m_endPoint/m_scale;
-            ellipse2->ischoose = false;
-            ellipse2->p=pen;
-            ellipse2->width=pencil->width;
-            ellipse2->setcenter();
-            m_shapes.push_back(ellipse2);
+             m_currShapes->setEndPoint(m_endPoint/m_scale);
+             m_shapes.push_back(m_currShapes);
 
         }
         else if (m_drawShapeType == EnumDrawPolygon) {
 
             m_isMove = false;
 
-
-        }
-        else if (m_drawShapeType == EnumScanFill) {
-            Scan *scan = new Scan;
-            scan->beginPoint = m_beginPoint;
-            scan->endPoint = m_endPoint;
-            m_scans.push_back(scan);
-
         }
         else if (m_drawShapeType == EnumCohenSutherland) {
-            CohenSutherlandd *cohensutherland = new CohenSutherlandd;
-            cohensutherland->beginPoint = m_beginPoint/m_scale;
-            cohensutherland->endPoint = m_endPoint/m_scale;
-            m_cohenSutherlands.push_back(cohensutherland);
-
            // clear();
             float xl =  m_beginPoint.x();
             float xr = m_endPoint.x();
@@ -1310,11 +981,6 @@ void PaintArea::mouseReleaseEvent(QMouseEvent *event)
 
         }
         else if (m_drawShapeType == EnumCutLineCenter) {
-            Scan *scan = new Scan;
-            scan->beginPoint = m_beginPoint;
-            scan->endPoint = m_endPoint;
-            m_scans.push_back(scan);
-
 
             float xl =  m_beginPoint.x();
             float xr = m_endPoint.x();
@@ -1346,13 +1012,13 @@ void PaintArea::mouseReleaseEvent(QMouseEvent *event)
 //键盘按下事件
 void PaintArea::keyPressEvent(QKeyEvent *ev)
 {
-  //  qDebug() << "键盘" <<endl;
+  //   << "键盘" <<endl;
     m_tmpImage = m_tmpImageTrans;
     if(ev->key() == Qt::Key_W)
     {
         if(m_drawShapeType == PaintArea::EnumRotateShape)
         {
-      //      qDebug() << "按了旋转了" <<endl;
+      //       << "按了旋转了" <<endl;
             thita = 1;
             paintImage(m_tmpImage);
 
@@ -1360,7 +1026,7 @@ void PaintArea::keyPressEvent(QKeyEvent *ev)
         else if(m_drawShapeType == PaintArea::EnumZoomShape)
         {
 
-        //    qDebug() << "按了缩放了" <<endl;
+        //     << "按了缩放了" <<endl;
             sX=1.1;
             sY=1.1;
             paintImage(m_tmpImage);
@@ -1372,14 +1038,14 @@ void PaintArea::keyPressEvent(QKeyEvent *ev)
         if(m_drawShapeType == PaintArea::EnumRotateShape)
         {
 
-        //    qDebug() << "按了旋转了" <<endl;
+        //     << "按了旋转了" <<endl;
             thita = -1;
             paintImage(m_tmpImage);
 
         }
         else if(m_drawShapeType == PaintArea::EnumZoomShape)
         {
-        //    qDebug() << "按了缩放了" <<endl;
+        //     << "按了缩放了" <<endl;
             sX=0.9;
             sY=0.9;
             paintImage(m_tmpImage);

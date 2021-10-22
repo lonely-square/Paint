@@ -1,5 +1,6 @@
 #include "shape.h"
 
+
 #include <QDebug>
 
 Eigen::Vector3d pointToVecter(QPoint p)
@@ -69,6 +70,732 @@ Eigen::Matrix3d getScale2dCenter(double x,double y,QPoint center)
 }
 
 
+//下面都是基础画画方法
+void Linecenter::paintLinecenter(QPainter* paint)
+{
+    pencil->width = width;
+    cout << width <<endl;
+    paint->setPen(p);
+
+    if (m_drawLineType == dashLine)
+    {
+        int x0 = beginPoint.x();
+        int y0 = beginPoint.y();
+        int x1 = endPoint.x();
+        int y1 = endPoint.y();
+        int x = x0, y = y0;
+        int a = y0 - y1, b = x1 - x0;
+        int cx = (b >= 0 ? 1 : (b = -b, -1));
+        int cy = (a <= 0 ? 1 : (a = -a, -1));
+
+        int brokenFlag=0;
+
+        if ( brokenFlag%(width*6) >width*0 && brokenFlag%(width*6) < width*4 ) pencil->CirclePen(paint,x,y);
+
+        int d, d1, d2;
+        if (-a <= b)		// 斜率绝对值 <= 1
+        {
+            d = 2 * a + b;
+            d1 = 2 * a;
+            d2 = 2 * (a + b);
+            while(x != x1)
+            {
+                if (d < 0)
+                    y += cy, d += d2;
+                else
+                    d += d1;
+                x += cx;
+
+                brokenFlag++;
+                if ( brokenFlag%(width*6) >0 && brokenFlag%(width*6) < width*4 )
+                pencil->CirclePen(paint,x,y);
+
+
+            }
+        }
+        else				// 斜率绝对值 > 1
+        {
+            d = 2 * b + a;
+            d1 = 2 * b;
+            d2 = 2 * (a + b);
+            while(y != y1)
+            {
+                if(d < 0)
+                    d += d1;
+                else
+                    x += cx, d += d2;
+                y += cy;
+
+                brokenFlag++;
+               if ( brokenFlag%(width*6) >0 && brokenFlag%(width*6) < width*4 )
+                   pencil->CirclePen(paint,x,y);
+
+            }
+        }
+
+    }
+    else if (m_drawLineType == defaultLine) {
+
+        {
+            int x0 = beginPoint.x();
+            int y0 = beginPoint.y();
+            int x1 = endPoint.x();
+            int y1 = endPoint.y();
+            int x = x0, y = y0;
+            int a = y0 - y1, b = x1 - x0;
+            int cx = (b >= 0 ? 1 : (b = -b, -1));
+            int cy = (a <= 0 ? 1 : (a = -a, -1));
+
+            int brokenFlag=0;
+
+
+            pencil->CirclePen(paint,x,y);
+
+            int d, d1, d2;
+            if (-a <= b)		// 斜率绝对值 <= 1
+            {
+                d = 2 * a + b;
+                d1 = 2 * a;
+                d2 = 2 * (a + b);
+                while(x != x1)
+                {
+                    if (d < 0)
+                        y += cy, d += d2;
+                    else
+                        d += d1;
+                    x += cx;
+
+                    brokenFlag++;
+
+
+                   pencil->CirclePen(paint,x,y);
+
+
+                }
+            }
+            else				// 斜率绝对值 > 1
+            {
+                d = 2 * b + a;
+                d1 = 2 * b;
+                d2 = 2 * (a + b);
+                while(y != y1)
+                {
+                    if(d < 0)
+                        d += d1;
+                    else
+                        x += cx, d += d2;
+                    y += cy;
+
+                    brokenFlag++;
+
+                       pencil->CirclePen(paint,x,y);
+
+                }
+            }
+
+        }
+
+    }
+}
+
+void Rect::paintLineBresenham(QPoint beginPoint, QPoint endPoint,QPen p,int width, QPainter* paint)
+{
+
+    pencil->width=width;
+    paint->setPen(p);
+
+    if (m_drawLineType == dashLine)
+        {
+        int x0 = beginPoint.x();
+        int y0 = beginPoint.y();
+        int x1 = endPoint.x();
+        int y1 = endPoint.y();
+
+        int dx = x1 - x0;//x偏移量
+        int dy = y1 - y0;//y偏移量
+        int ux = dx >0 ? 1 : -1;//x伸展方向
+        int uy = dy >0 ? 1 : -1;//y伸展方向
+        int dx2 = abs(dx << 1);//x偏移量乘2
+        int dy2 = abs(dy << 1);//y偏移量乘2
+        int brokenFlag = 0;
+        if (abs(dx)>abs(dy))//以x为增量方向计算
+        {
+            int e = -dx; //e = -0.5 * 2 * dx,把e 用2 * dx* e替换
+            int x = x0;//起点x坐标
+            int y = y0;//起点y坐标
+            while (x!=x1+ux)
+            {
+                brokenFlag++;
+                if ( brokenFlag%(width*6) >width*0 && brokenFlag%(width*6) < width*4 )
+                pencil->CirclePen(paint,x,y);
+                e = e + dy2;//来自 2*e*dx= 2*e*dx + 2dy  （原来是 e = e + k）
+                if (e > 0)//e是整数且大于0时表示要取右上的点（否则是右下的点）
+                {
+                    if (y!=y1)
+                    {
+                        y += uy;
+                    }
+                    e = e - dx2;//2*e*dx = 2*e*dx - 2*dx  (原来是 e = e -1)
+                }
+                x += ux;
+            }
+        }
+        else
+        {//以y为增量方向计算
+            int e = -dy; //e = -0.5 * 2 * dy,把e 用2 * dy* e替换
+            int x = x0;//起点x坐标
+            int y = y0;//起点y坐标
+            while (y!=y1+uy)
+            {
+                brokenFlag++;
+                if ( brokenFlag%(width*6) >width*0 && brokenFlag%(width*6) < width*4 )
+                pencil->CirclePen(paint,x,y);
+                e = e + dx2;//来自 2*e*dy= 2*e*dy + 2dy  （原来是 e = e + k）
+                if (e > 0)//e是整数且大于0时表示要取右上的点（否则是右下的点）
+                {
+                    if (x!=x1)
+                    {
+                        x += ux;
+                    }
+                    e = e - dy2;//2*e*dy = 2*e*dy - 2*dy  (原来是 e = e -1)
+                }
+                y += uy;
+            }
+        }
+    }
+    else if  (m_drawLineType == defaultLine)
+    {
+    int x0 = beginPoint.x();
+    int y0 = beginPoint.y();
+    int x1 = endPoint.x();
+    int y1 = endPoint.y();
+
+    int dx = x1 - x0;//x偏移量
+    int dy = y1 - y0;//y偏移量
+    int ux = dx >0 ? 1 : -1;//x伸展方向
+    int uy = dy >0 ? 1 : -1;//y伸展方向
+    int dx2 = abs(dx << 1);//x偏移量乘2
+    int dy2 = abs(dy << 1);//y偏移量乘2
+    if (abs(dx)>abs(dy))//以x为增量方向计算
+    {
+        int e = -dx; //e = -0.5 * 2 * dx,把e 用2 * dx* e替换
+        int x = x0;//起点x坐标
+        int y = y0;//起点y坐标
+        while (x!=x1+ux)
+        {
+            pencil->CirclePen(paint,x,y);
+            e = e + dy2;//来自 2*e*dx= 2*e*dx + 2dy  （原来是 e = e + k）
+            if (e > 0)//e是整数且大于0时表示要取右上的点（否则是右下的点）
+            {
+                if (y!=y1)
+                {
+                    y += uy;
+                }
+                e = e - dx2;//2*e*dx = 2*e*dx - 2*dx  (原来是 e = e -1)
+            }
+            x += ux;
+        }
+    }
+    else
+    {//以y为增量方向计算
+        int e = -dy; //e = -0.5 * 2 * dy,把e 用2 * dy* e替换
+        int x = x0;//起点x坐标
+        int y = y0;//起点y坐标
+        while (y!=y1+uy)
+        {
+
+            pencil->CirclePen(paint,x,y);
+            e = e + dx2;//来自 2*e*dy= 2*e*dy + 2dy  （原来是 e = e + k）
+            if (e > 0)//e是整数且大于0时表示要取右上的点（否则是右下的点）
+            {
+                if (x!=x1)
+                {
+                    x += ux;
+                }
+                e = e - dy2;//2*e*dy = 2*e*dy - 2*dy  (原来是 e = e -1)
+            }
+            y += uy;
+        }
+    }
+}
+
+}
+
+void polygon::paintLineBresenham(QPoint beginPoint, QPoint endPoint,QPen p,int width, QPainter* paint)
+{
+
+    pencil->width=width;
+    paint->setPen(p);
+
+    if (m_drawLineType == dashLine)
+        {
+        int x0 = beginPoint.x();
+        int y0 = beginPoint.y();
+        int x1 = endPoint.x();
+        int y1 = endPoint.y();
+
+        int dx = x1 - x0;//x偏移量
+        int dy = y1 - y0;//y偏移量
+        int ux = dx >0 ? 1 : -1;//x伸展方向
+        int uy = dy >0 ? 1 : -1;//y伸展方向
+        int dx2 = abs(dx << 1);//x偏移量乘2
+        int dy2 = abs(dy << 1);//y偏移量乘2
+        int brokenFlag = 0;
+        if (abs(dx)>abs(dy))//以x为增量方向计算
+        {
+            int e = -dx; //e = -0.5 * 2 * dx,把e 用2 * dx* e替换
+            int x = x0;//起点x坐标
+            int y = y0;//起点y坐标
+            while (x!=x1+ux)
+            {
+                brokenFlag++;
+                if ( brokenFlag%(width*6) >width*0 && brokenFlag%(width*6) < width*4 )
+                pencil->CirclePen(paint,x,y);
+                e = e + dy2;//来自 2*e*dx= 2*e*dx + 2dy  （原来是 e = e + k）
+                if (e > 0)//e是整数且大于0时表示要取右上的点（否则是右下的点）
+                {
+                    if (y!=y1)
+                    {
+                        y += uy;
+                    }
+                    e = e - dx2;//2*e*dx = 2*e*dx - 2*dx  (原来是 e = e -1)
+                }
+                x += ux;
+            }
+        }
+        else
+        {//以y为增量方向计算
+            int e = -dy; //e = -0.5 * 2 * dy,把e 用2 * dy* e替换
+            int x = x0;//起点x坐标
+            int y = y0;//起点y坐标
+            while (y!=y1+uy)
+            {
+                brokenFlag++;
+                if ( brokenFlag%(width*6) >width*0 && brokenFlag%(width*6) < width*4 )
+                pencil->CirclePen(paint,x,y);
+                e = e + dx2;//来自 2*e*dy= 2*e*dy + 2dy  （原来是 e = e + k）
+                if (e > 0)//e是整数且大于0时表示要取右上的点（否则是右下的点）
+                {
+                    if (x!=x1)
+                    {
+                        x += ux;
+                    }
+                    e = e - dy2;//2*e*dy = 2*e*dy - 2*dy  (原来是 e = e -1)
+                }
+                y += uy;
+            }
+        }
+    }
+    else if  (m_drawLineType == defaultLine)
+    {
+    int x0 = beginPoint.x();
+    int y0 = beginPoint.y();
+    int x1 = endPoint.x();
+    int y1 = endPoint.y();
+
+    int dx = x1 - x0;//x偏移量
+    int dy = y1 - y0;//y偏移量
+    int ux = dx >0 ? 1 : -1;//x伸展方向
+    int uy = dy >0 ? 1 : -1;//y伸展方向
+    int dx2 = abs(dx << 1);//x偏移量乘2
+    int dy2 = abs(dy << 1);//y偏移量乘2
+    if (abs(dx)>abs(dy))//以x为增量方向计算
+    {
+        int e = -dx; //e = -0.5 * 2 * dx,把e 用2 * dx* e替换
+        int x = x0;//起点x坐标
+        int y = y0;//起点y坐标
+        while (x!=x1+ux)
+        {
+            pencil->CirclePen(paint,x,y);
+            e = e + dy2;//来自 2*e*dx= 2*e*dx + 2dy  （原来是 e = e + k）
+            if (e > 0)//e是整数且大于0时表示要取右上的点（否则是右下的点）
+            {
+                if (y!=y1)
+                {
+                    y += uy;
+                }
+                e = e - dx2;//2*e*dx = 2*e*dx - 2*dx  (原来是 e = e -1)
+            }
+            x += ux;
+        }
+    }
+    else
+    {//以y为增量方向计算
+        int e = -dy; //e = -0.5 * 2 * dy,把e 用2 * dy* e替换
+        int x = x0;//起点x坐标
+        int y = y0;//起点y坐标
+        while (y!=y1+uy)
+        {
+
+            pencil->CirclePen(paint,x,y);
+            e = e + dx2;//来自 2*e*dy= 2*e*dy + 2dy  （原来是 e = e + k）
+            if (e > 0)//e是整数且大于0时表示要取右上的点（否则是右下的点）
+            {
+                if (x!=x1)
+                {
+                    x += ux;
+                }
+                e = e - dy2;//2*e*dy = 2*e*dy - 2*dy  (原来是 e = e -1)
+            }
+            y += uy;
+        }
+    }
+}
+
+}
+
+void LineBresenham::paintLineBresenham(QPainter* paint)
+{
+
+    pencil->width = width;
+
+    paint->setPen(p);
+
+    if (m_drawLineType == dashLine)
+        {
+        int x0 = beginPoint.x();
+        int y0 = beginPoint.y();
+        int x1 = endPoint.x();
+        int y1 = endPoint.y();
+
+        int dx = x1 - x0;//x偏移量
+        int dy = y1 - y0;//y偏移量
+        int ux = dx >0 ? 1 : -1;//x伸展方向
+        int uy = dy >0 ? 1 : -1;//y伸展方向
+        int dx2 = abs(dx << 1);//x偏移量乘2
+        int dy2 = abs(dy << 1);//y偏移量乘2
+        int brokenFlag = 0;
+        if (abs(dx)>abs(dy))//以x为增量方向计算
+        {
+            int e = -dx; //e = -0.5 * 2 * dx,把e 用2 * dx* e替换
+            int x = x0;//起点x坐标
+            int y = y0;//起点y坐标
+            while (x!=x1+ux)
+            {
+                brokenFlag++;
+                if ( brokenFlag%(width*6) >width*0 && brokenFlag%(width*6) < width*4 )
+                pencil->CirclePen(paint,x,y);
+                e = e + dy2;//来自 2*e*dx= 2*e*dx + 2dy  （原来是 e = e + k）
+                if (e > 0)//e是整数且大于0时表示要取右上的点（否则是右下的点）
+                {
+                    if (y!=y1)
+                    {
+                        y += uy;
+                    }
+                    e = e - dx2;//2*e*dx = 2*e*dx - 2*dx  (原来是 e = e -1)
+                }
+                x += ux;
+            }
+        }
+        else
+        {//以y为增量方向计算
+            int e = -dy; //e = -0.5 * 2 * dy,把e 用2 * dy* e替换
+            int x = x0;//起点x坐标
+            int y = y0;//起点y坐标
+            while (y!=y1+uy)
+            {
+                brokenFlag++;
+                if ( brokenFlag%(width*6) >width*0 && brokenFlag%(width*6) < width*4 )
+                pencil->CirclePen(paint,x,y);
+                e = e + dx2;//来自 2*e*dy= 2*e*dy + 2dy  （原来是 e = e + k）
+                if (e > 0)//e是整数且大于0时表示要取右上的点（否则是右下的点）
+                {
+                    if (x!=x1)
+                    {
+                        x += ux;
+                    }
+                    e = e - dy2;//2*e*dy = 2*e*dy - 2*dy  (原来是 e = e -1)
+                }
+                y += uy;
+            }
+        }
+    }
+    else if  (m_drawLineType == defaultLine)
+    {
+    int x0 = beginPoint.x();
+    int y0 = beginPoint.y();
+    int x1 = endPoint.x();
+    int y1 = endPoint.y();
+
+    int dx = x1 - x0;//x偏移量
+    int dy = y1 - y0;//y偏移量
+    int ux = dx >0 ? 1 : -1;//x伸展方向
+    int uy = dy >0 ? 1 : -1;//y伸展方向
+    int dx2 = abs(dx << 1);//x偏移量乘2
+    int dy2 = abs(dy << 1);//y偏移量乘2
+    if (abs(dx)>abs(dy))//以x为增量方向计算
+    {
+        int e = -dx; //e = -0.5 * 2 * dx,把e 用2 * dx* e替换
+        int x = x0;//起点x坐标
+        int y = y0;//起点y坐标
+        while (x!=x1+ux)
+        {
+            pencil->CirclePen(paint,x,y);
+            e = e + dy2;//来自 2*e*dx= 2*e*dx + 2dy  （原来是 e = e + k）
+            if (e > 0)//e是整数且大于0时表示要取右上的点（否则是右下的点）
+            {
+                if (y!=y1)
+                {
+                    y += uy;
+                }
+                e = e - dx2;//2*e*dx = 2*e*dx - 2*dx  (原来是 e = e -1)
+            }
+            x += ux;
+        }
+    }
+    else
+    {//以y为增量方向计算
+        int e = -dy; //e = -0.5 * 2 * dy,把e 用2 * dy* e替换
+        int x = x0;//起点x坐标
+        int y = y0;//起点y坐标
+        while (y!=y1+uy)
+        {
+
+            pencil->CirclePen(paint,x,y);
+            e = e + dx2;//来自 2*e*dy= 2*e*dy + 2dy  （原来是 e = e + k）
+            if (e > 0)//e是整数且大于0时表示要取右上的点（否则是右下的点）
+            {
+                if (x!=x1)
+                {
+                    x += ux;
+                }
+                e = e - dy2;//2*e*dy = 2*e*dy - 2*dy  (原来是 e = e -1)
+            }
+            y += uy;
+        }
+    }
+}
+
+}
+
+void Rect::paintRect(QPoint beginPoint, QPoint endPoint,QPen p,int width, QPainter* ptr)
+{
+    Rect::paintLineBresenham(beginPoint,QPoint(endPoint.x(),beginPoint.y()),p,width,ptr);
+    Rect::paintLineBresenham(beginPoint,QPoint(beginPoint.x(),endPoint.y()),p,width,ptr);
+    Rect::paintLineBresenham(endPoint,QPoint(beginPoint.x(),endPoint.y()),p,width,ptr);
+    Rect::paintLineBresenham(endPoint,QPoint(endPoint.x(),beginPoint.y()),p,width,ptr);
+
+}
+
+void Circle::paintCircle(QPoint beginPoint, QPoint endPoint,QPen p,int width, QPainter* paint)
+{
+    pencil->width = width;
+
+    paint->setPen(p);
+
+
+    int x, y, w,h, xc,yc;
+    double e,r;
+
+    x = beginPoint.x();
+    y = beginPoint.y();
+    w = endPoint.x();
+    h = endPoint.y();
+    r= sqrt((w-x)*(w-x)+(h-y)*(h-y));
+    xc=x;yc=y;
+    x=0;y=r;
+    e=1-r;
+
+    if (m_drawLineType == Shape::defaultLine)
+    {
+        pencil->CirclePen(paint,x+xc,y+yc);
+        pencil->CirclePen(paint,-x+xc,-y+yc);
+        pencil->CirclePen(paint,y+xc,x+yc);
+        pencil->CirclePen(paint,-y+xc,-x+yc);
+        pencil->CirclePen(paint,x+xc,-y+yc);
+        pencil->CirclePen(paint,-x+xc,y+yc);
+        pencil->CirclePen(paint,-y+xc,x+yc);
+        pencil->CirclePen(paint,y+xc,-x+yc);
+        while(x<=y)
+         {     if(e<0)   e+=2*x+3;
+                  else   { e+=2*(x-y)+5; y--;}
+                  x++;
+                  pencil->CirclePen(paint,x+xc,y+yc);
+                  pencil->CirclePen(paint,-x+xc,-y+yc);
+                  pencil->CirclePen(paint,y+xc,x+yc);
+                  pencil->CirclePen(paint,-y+xc,-x+yc);
+                  pencil->CirclePen(paint,x+xc,-y+yc);
+                  pencil->CirclePen(paint,-x+xc,y+yc);
+                  pencil->CirclePen(paint,-y+xc,x+yc);
+                  pencil->CirclePen(paint,y+xc,-x+yc);
+                       // 画八分对称性的其他点
+          }
+    }
+    else if (m_drawLineType == Shape::dashLine) {
+        int brokenFlag = 0;
+
+
+        if ( brokenFlag%(width*6) >width*0 && brokenFlag%(width*6) < width*4 )
+        {
+        pencil->CirclePen(paint,x+xc,y+yc);
+        pencil->CirclePen(paint,-x+xc,-y+yc);
+        pencil->CirclePen(paint,y+xc,x+yc);
+        pencil->CirclePen(paint,-y+xc,-x+yc);
+        pencil->CirclePen(paint,x+xc,-y+yc);
+        pencil->CirclePen(paint,-x+xc,y+yc);
+        pencil->CirclePen(paint,-y+xc,x+yc);
+        pencil->CirclePen(paint,y+xc,-x+yc);
+        }
+
+        while(x<=y)
+         {     if(e<0)   e+=2*x+3;
+                  else   { e+=2*(x-y)+5; y--;}
+                  x++;
+                  brokenFlag++;
+                  if ( brokenFlag%(width*6) >width*0 && brokenFlag%(width*6) < width*4 )
+                  {
+                      pencil->CirclePen(paint,x+xc,y+yc);
+                      pencil->CirclePen(paint,-x+xc,-y+yc);
+                      pencil->CirclePen(paint,y+xc,x+yc);
+                      pencil->CirclePen(paint,-y+xc,-x+yc);
+                      pencil->CirclePen(paint,x+xc,-y+yc);
+                      pencil->CirclePen(paint,-x+xc,y+yc);
+                      pencil->CirclePen(paint,-y+xc,x+yc);
+                      pencil->CirclePen(paint,y+xc,-x+yc);
+                  }
+
+                       // 画八分对称性的其他点
+          }
+    }
+
+}
+
+void ellipse::paintEllipse(QPoint beginPoint, QPoint endPoint,QPen p,int width, QPainter* paint)
+{
+    pencil->width = width;
+
+    paint->setPen(p);
+
+        int x, y, w, h,a,b,xc,yc;
+        float d1,d2;
+        x = beginPoint.x() ;
+        y = beginPoint.y() ;
+        w = endPoint.x() ;
+        h = endPoint.y() ;
+        xc=x;yc=y;
+        if(x>w) a=x-w;
+        else a=w-x;
+        if(y>h)b=y-h;
+        else b=h-y;
+        x=0;y=b;
+        d1 = b * b + a * a * (-b + 0.25);
+
+        if (m_drawLineType == Shape::defaultLine)
+        {
+
+        pencil->CirclePen(paint,x+xc,y+yc);
+        pencil->CirclePen(paint,x-xc,y+yc);
+        pencil->CirclePen(paint,x+xc,y-yc);
+        pencil->CirclePen(paint,x-xc,y-yc);
+
+        while (b * b * (x + 1) < a * a * (y - 0.5))
+        {
+            if (d1 < 0)
+            {
+                d1 += b * b * (2 * x + 3);
+                x++;
+            }
+            else
+            {
+                d1 += (b * b * (2 * x + 3) + a * a * (-2 * y + 2));
+                x++;
+                y--;
+            }
+
+
+            pencil->CirclePen(paint,x+xc,y+yc);
+            pencil->CirclePen(paint,x+xc,-y+yc);
+            pencil->CirclePen(paint,-x+xc,y+yc);
+            pencil->CirclePen(paint,-x+xc,-y+yc);
+
+
+        }
+        d2 = sqrt(b * (x + 0.5)) + sqrt(a * (y - 1)) - sqrt(a * b);
+        while (y > 0)
+        {
+            if (d2 < 0)
+            {
+                d2 += b * b * (2 * x + 2) + a * a * (-2 * y + 3);
+                x++;
+                y--;
+            }
+            else
+            {
+                d2 += a * a * (-2 * y + 3);
+                y--;
+            }
+
+            pencil->CirclePen(paint,x+xc,y+yc);
+            pencil->CirclePen(paint,x+xc,-y+yc);
+            pencil->CirclePen(paint,-x+xc,y+yc);
+            pencil->CirclePen(paint,-x+xc,-y+yc);
+        }
+       }
+        else if (m_drawLineType == Shape::dashLine) {
+            int brokenFlag = 0;
+            if ( brokenFlag%(width*6) >width*0 && brokenFlag%(width*6) < width*4 )
+            {
+                pencil->CirclePen(paint,x+xc,y+yc);
+                pencil->CirclePen(paint,x-xc,y+yc);
+                pencil->CirclePen(paint,x+xc,y-yc);
+                pencil->CirclePen(paint,x-xc,y-yc);
+
+            }
+
+            while (b * b * (x + 1) < a * a * (y - 0.5))
+            {
+                if (d1 < 0)
+                {
+                    d1 += b * b * (2 * x + 3);
+                    x++;
+                }
+                else
+                {
+                    d1 += (b * b * (2 * x + 3) + a * a * (-2 * y + 2));
+                    x++;
+                    y--;
+                }
+                brokenFlag++;
+                if ( brokenFlag%(width*6) >width*0 && brokenFlag%(width*6) < width*4 )
+                {
+                pencil->CirclePen(paint,x+xc,y+yc);
+                pencil->CirclePen(paint,x+xc,-y+yc);
+                pencil->CirclePen(paint,-x+xc,y+yc);
+                pencil->CirclePen(paint,-x+xc,-y+yc);
+                }
+
+            }
+            d2 = sqrt(b * (x + 0.5)) + sqrt(a * (y - 1)) - sqrt(a * b);
+            while (y > 0)
+            {
+                if (d2 < 0)
+                {
+                    d2 += b * b * (2 * x + 2) + a * a * (-2 * y + 3);
+                    x++;
+                    y--;
+                }
+                else
+                {
+                    d2 += a * a * (-2 * y + 3);
+                    y--;
+                }
+
+                brokenFlag++;
+                if ( brokenFlag%(width*6) >width*0 && brokenFlag%(width*6) < width*4 )
+                {
+                pencil->CirclePen(paint,x+xc,y+yc);
+                pencil->CirclePen(paint,x+xc,-y+yc);
+                pencil->CirclePen(paint,-x+xc,y+yc);
+                pencil->CirclePen(paint,-x+xc,-y+yc);
+                }
+            }
+
+          }
+
+}
+
+
+
 void Shape::translation(int offsetX,int offsetY)
 {
     cout<<"没写好捏"<<endl;
@@ -134,14 +861,265 @@ void polygon::translation(int offsetX,int offsetY)
     setcenter();
 }
 
+void Linecenter::rotate(double thita)
+{
+    Eigen::Matrix3d matrix = getRotate2dCenter(thita,center);
+
+
+        Eigen::Vector3d vecter = pointToVecter(beginPoint);
+
+        Eigen::Vector3d res = matrix*vecter;
+
+        beginPoint=QPoint(res.x(),res.y());
+
+         vecter = pointToVecter(endPoint);
+
+        res = matrix*vecter;
+
+        endPoint=QPoint(res.x(),res.y());
+
+    setcenter();
+
+}
+
+void Linecenter::zoom(double x,double y)
+{
+    Eigen::Matrix3d matrix = getScale2dCenter(x,y,center);
+
+
+        Eigen::Vector3d vecter = pointToVecter(beginPoint);
+
+        Eigen::Vector3d res = matrix*vecter;
+
+        beginPoint=QPoint(res.x(),res.y());
+
+         vecter = pointToVecter(endPoint);
+
+        res = matrix*vecter;
+
+        endPoint=QPoint(res.x(),res.y());
+
+    setcenter();
+}
+
+void Linecenter::translation(int offsetX,int offsetY)
+{
+
+
+        beginPoint+=QPoint(offsetX,offsetY);
+        endPoint+=QPoint(offsetX,offsetY);
+    setcenter();
+}
+
+void LineBresenham::rotate(double thita)
+{
+    Eigen::Matrix3d matrix = getRotate2dCenter(thita,center);
+
+
+        Eigen::Vector3d vecter = pointToVecter(beginPoint);
+
+        Eigen::Vector3d res = matrix*vecter;
+
+        beginPoint=QPoint(res.x(),res.y());
+
+         vecter = pointToVecter(endPoint);
+
+        res = matrix*vecter;
+
+        endPoint=QPoint(res.x(),res.y());
+
+    setcenter();
+
+}
+
+void LineBresenham::zoom(double x,double y)
+{
+    Eigen::Matrix3d matrix = getScale2dCenter(x,y,center);
+
+
+        Eigen::Vector3d vecter = pointToVecter(beginPoint);
+
+        Eigen::Vector3d res = matrix*vecter;
+
+        beginPoint=QPoint(res.x(),res.y());
+
+         vecter = pointToVecter(endPoint);
+
+        res = matrix*vecter;
+
+        endPoint=QPoint(res.x(),res.y());
+
+    setcenter();
+}
+
+void LineBresenham::translation(int offsetX,int offsetY)
+{
+
+
+        beginPoint+=QPoint(offsetX,offsetY);
+        endPoint+=QPoint(offsetX,offsetY);
+    setcenter();
+}
+
+void Rect::rotate(double thita)
+{
+    Eigen::Matrix3d matrix = getRotate2dCenter(thita,center);
+
+
+        Eigen::Vector3d vecter = pointToVecter(beginPoint);
+
+        Eigen::Vector3d res = matrix*vecter;
+
+        beginPoint=QPoint(res.x(),res.y());
+
+         vecter = pointToVecter(endPoint);
+
+        res = matrix*vecter;
+
+        endPoint=QPoint(res.x(),res.y());
+
+    setcenter();
+
+}
+
+void Rect::zoom(double x,double y)
+{
+    Eigen::Matrix3d matrix = getScale2dCenter(x,y,center);
+
+
+        Eigen::Vector3d vecter = pointToVecter(beginPoint);
+
+        Eigen::Vector3d res = matrix*vecter;
+
+        beginPoint=QPoint(res.x(),res.y());
+
+         vecter = pointToVecter(endPoint);
+
+        res = matrix*vecter;
+
+        endPoint=QPoint(res.x(),res.y());
+
+    setcenter();
+}
+
+void Rect::translation(int offsetX,int offsetY)
+{
+
+
+        beginPoint+=QPoint(offsetX,offsetY);
+        endPoint+=QPoint(offsetX,offsetY);
+    setcenter();
+}
+
+
+void Circle::rotate(double thita)
+{
+    Eigen::Matrix3d matrix = getRotate2dCenter(thita,center);
+
+
+        Eigen::Vector3d vecter = pointToVecter(beginPoint);
+
+        Eigen::Vector3d res = matrix*vecter;
+
+        beginPoint=QPoint(res.x(),res.y());
+
+         vecter = pointToVecter(endPoint);
+
+        res = matrix*vecter;
+
+        endPoint=QPoint(res.x(),res.y());
+
+    setcenter();
+
+}
+
+void Circle::zoom(double x,double y)
+{
+    Eigen::Matrix3d matrix = getScale2dCenter(x,y,center);
+
+
+        Eigen::Vector3d vecter = pointToVecter(beginPoint);
+
+        Eigen::Vector3d res = matrix*vecter;
+
+        beginPoint=QPoint(res.x(),res.y());
+
+         vecter = pointToVecter(endPoint);
+
+        res = matrix*vecter;
+
+        endPoint=QPoint(res.x(),res.y());
+
+    setcenter();
+}
+
+void Circle::translation(int offsetX,int offsetY)
+{
+
+
+        beginPoint+=QPoint(offsetX,offsetY);
+        endPoint+=QPoint(offsetX,offsetY);
+    setcenter();
+}
+
+void ellipse::rotate(double thita)
+{
+    Eigen::Matrix3d matrix = getRotate2dCenter(thita,center);
+
+
+        Eigen::Vector3d vecter = pointToVecter(beginPoint);
+
+        Eigen::Vector3d res = matrix*vecter;
+
+        beginPoint=QPoint(res.x(),res.y());
+
+         vecter = pointToVecter(endPoint);
+
+        res = matrix*vecter;
+
+        endPoint=QPoint(res.x(),res.y());
+
+    setcenter();
+
+}
+
+void ellipse::zoom(double x,double y)
+{
+    Eigen::Matrix3d matrix = getScale2dCenter(x,y,center);
+
+
+        Eigen::Vector3d vecter = pointToVecter(beginPoint);
+
+        Eigen::Vector3d res = matrix*vecter;
+
+        beginPoint=QPoint(res.x(),res.y());
+
+         vecter = pointToVecter(endPoint);
+
+        res = matrix*vecter;
+
+        endPoint=QPoint(res.x(),res.y());
+
+    setcenter();
+}
+
+void ellipse::translation(int offsetX,int offsetY)
+{
+
+
+        beginPoint+=QPoint(offsetX,offsetY);
+        endPoint+=QPoint(offsetX,offsetY);
+    setcenter();
+}
+
 bool polygon::IsIn(QPoint p)
 {
     return polygonInner->isInPolygon(p);
 }
 
-void polygon::DrawIt(QPainter* ptr,QColor color,qreal scale)
+void polygon::DrawIt(QPainter* ptr,QColor color)
 {
-    return polygonInner->drawPolyScans(ptr,color,scale);
+    return polygonInner->drawPolyScans(ptr,color);
 }
 
 /*Bezier曲线生成*/
@@ -210,62 +1188,182 @@ bool Bezier::IsIn(QPoint p)
     return true;
 }
 
-void Bezier::DrawIt(QPainter* ptr,QColor color,qreal scale)
+void Bezier::DrawIt(QPainter* ptr,QColor color)
 {
     p.setColor(Qt::red);
     ptr->setPen(p);
     for (int i=0;i < resPoints.size() ; i++) {
-        ptr->drawPoint(resPoints[i]/scale);
+        ptr->drawPoint(resPoints[i]);
     }
 }
 
 bool Linecenter::IsIn(QPoint p)
 {
-    return false;
+    qDebug()<< "choose zhixian" <<endl;
+    int ymax,ymin;
+       if(beginPoint.y()>endPoint.y()){
+           ymax = beginPoint.y();
+           ymin = endPoint.y();
+       }
+       else{
+           ymin = beginPoint.y();
+           ymax = endPoint.y();
+       }
+
+       if(p.y()<=ymax&&p.y()>=ymin){
+           if((endPoint.y()-beginPoint.y())*p.x()-(endPoint.x()-beginPoint.x())*p.y()+(endPoint.x()-beginPoint.x())*beginPoint.y()-(endPoint.y()-beginPoint.y())*beginPoint.x()<=width){
+               qDebug()<< "choosed zhixian" <<endl;
+               return true;
+           }
+           else
+               return false;
+       }
+       else
+           return false;
 }
 
-void Linecenter::DrawIt(QPainter* ptr,QColor color,qreal scale)
+void Linecenter::DrawIt(QPainter* ptr,QColor color)
 {
-
+    return Linecenter::paintLinecenter(ptr);
 }
 
 bool LineBresenham::IsIn(QPoint p)
 {
-    return false;
+    qDebug()<< "choose zhixian" <<endl;
+    int ymax,ymin;
+       if(beginPoint.y()>endPoint.y()){
+           ymax = beginPoint.y();
+           ymin = endPoint.y();
+       }
+       else{
+           ymin = beginPoint.y();
+           ymax = endPoint.y();
+       }
+
+       if(p.y()<=ymax&&p.y()>=ymin){
+           if((endPoint.y()-beginPoint.y())*p.x()-(endPoint.x()-beginPoint.x())*p.y()+(endPoint.x()-beginPoint.x())*beginPoint.y()-(endPoint.y()-beginPoint.y())*beginPoint.x()<=width){
+               qDebug()<< "choosed zhixian" <<endl;
+               return true;
+           }
+           else
+               return false;
+       }
+       else
+           return false;
 }
 
-void LineBresenham::DrawIt(QPainter* ptr,QColor color,qreal scale)
+void LineBresenham::DrawIt(QPainter* ptr,QColor color)
 {
-
+    return LineBresenham::paintLineBresenham(ptr);
 }
 
 bool Rect::IsIn(QPoint p)
 {
-    return false;
+
+    int ymax, ymin, xmax, xmin;
+       if(beginPoint.y()>endPoint.y()){
+           ymax = beginPoint.y();
+           ymin = endPoint.y();
+       }
+       else{
+           ymin = beginPoint.y();
+           ymax = endPoint.y();
+       }
+       if(beginPoint.x()>endPoint.x()){
+           xmax = beginPoint.x();
+           xmin = endPoint.x();
+       }
+       else{
+           xmin = beginPoint.x();
+           xmax = endPoint.x();
+       }
+
+       if(p.y()<=ymax&&p.y()>=ymin&&p.x()<=xmax&&p.x()>=xmin&&width!=0)
+           return true;
+       else
+           return false;
+
 }
 
-void Rect::DrawIt(QPainter* ptr,QColor color,qreal scale)
-{
 
+void Rect::DrawIt(QPainter* ptr,QColor color)
+{
+    return paintRect(beginPoint,endPoint,p,width,ptr);
 }
 
 bool Circle::IsIn(QPoint p)
 {
-    return false;
+    int a, b;
+    p -= beginPoint;
+
+         a = endPoint.x()-beginPoint.x();
+         b = endPoint.y()-beginPoint.y();
+         if(p.x()*p.x()+p.y()*p.y()<a*a+b*b)
+         {
+             cout <<"choose ellipse"<<endl;
+             return true;}
+         else
+             return false;
 }
 
-void Circle::DrawIt(QPainter* ptr,QColor color,qreal scale)
+void Circle::DrawIt(QPainter* ptr,QColor color)
 {
-
+    return paintCircle(beginPoint,endPoint,p,width,ptr);
 }
 
 bool ellipse::IsIn(QPoint p)
 {
+    int a, b;
+    p -= beginPoint;
+
+         a = endPoint.x()-beginPoint.x();
+         b = endPoint.y()-beginPoint.y();
+         if(p.x()*p.x()/(a*a)+p.y()*p.y()/(b*b)<1)
+         {
+             cout <<"choose ellipse"<<endl;
+             return true;}
+         else
+             return false;
+
+}
+
+void ellipse::DrawIt(QPainter* ptr,QColor color)
+{
+    return paintEllipse(beginPoint,endPoint,p,width,ptr);
+}
+
+bool Shape::setEndPoint(QPoint)
+{
     return false;
 }
 
-void ellipse::DrawIt(QPainter* ptr,QColor color,qreal scale)
+bool Linecenter::setEndPoint(QPoint p)
 {
+    endPoint = p;
+    return true;
+}
 
+bool Rect::setEndPoint(QPoint p)
+{
+    endPoint = p;
+    return true;
+}
+
+bool ellipse::setEndPoint(QPoint p)
+{
+    endPoint = p;
+    return true;
+}
+
+bool Circle::setEndPoint(QPoint p)
+{
+    endPoint = p;
+    return true;
+}
+
+bool LineBresenham::setEndPoint(QPoint p)
+{
+    endPoint = p;
+    return true;
 }
 

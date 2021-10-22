@@ -67,7 +67,7 @@ void polygonInner::showPolygonInEdgeTable()
 
 }
 
-void polygonInner::drawPolyScans(QPainter* ptr,QColor color,qreal scale)
+void polygonInner::drawPolyScans(QPainter* ptr,QColor color)
 {
 
     int scanLines;//扫描线数量
@@ -131,18 +131,7 @@ void polygonInner::drawPolyScans(QPainter* ptr,QColor color,qreal scale)
                 }
                 ptr->save();
                 ptr->setPen(color);
-                cout << y/scale<<endl;
 
-//                maxy=ceil(y/scale);    //填充拉升处理
-
-//                if (prey!= -1)
-//                {
-//                    for (int k=prey;k<maxy;k++) {
-//                        ptr->drawLine(QPointF(x0/scale, k),QPointF(x1/scale, k));
-//                    }
-//                }
-
-//                prey=maxy;
                 ptr->drawLine(QPointF(x0, y),QPointF(x1, y));
 
                 ptr->restore();
@@ -154,6 +143,7 @@ void polygonInner::drawPolyScans(QPainter* ptr,QColor color,qreal scale)
 
 
 }
+
 
 void polygonInner::showPolygonInSeed(QPainter* ptr)
 {

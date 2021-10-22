@@ -42,23 +42,10 @@ public:
         EnumZoomShape,
     };
 
-    enum DrawLineType{ //线型种类
-        defaultLine,
-        dashLine,
-    };
-    DrawLineType m_drawLineType;
-    void setLineShape(DrawLineType drawLinrType);
 
+    Shape::DrawLineType m_drawLineType= Shape::defaultLine;
+    void setLineShape(Shape::DrawLineType drawLinrType);
 
-    struct Scan{
-        QPoint beginPoint;
-        QPoint middlePoint;
-        QPoint endPoint;
-    };
-    struct CohenSutherlandd{
-        QPoint beginPoint;
-        QPoint endPoint;
-    };
 
 
     explicit PaintArea(QWidget *parent = 0,Pencil *pencil1 = nullptr);
@@ -88,15 +75,12 @@ public:
 
     void chooseshape(QPoint pos);
 
-    void paintLinecenter(QPoint beginPoint, QPoint endPoint,QPen p,int width, QImage &image);
-    void paintLineBresenham(QPoint beginPoint, QPoint endPoint,QPen p,int width, QImage &image);
-    void paintRect(QPoint beginPoint, QPoint endPoint,QPen p,int width, QImage &image);
-    void fillRect(QPoint beginPoint,QImage &image, QColor color);
+
+    void paintLineBresenham(QPoint beginPoint, QPoint endPoint,QPen p,int width, QImage &image);  //保留一个用于辅助作图
+
     void pologonScan(QPoint beginPoint, QPoint endPoint, QImage &image);
-    void paintCircle(QPoint beginPoint, QPoint endPoint,QPen p,int width, QImage &image);
-    void CirclePoints(int x,int y);//画圆辅助函数
-    void paintEllipse(QPoint beginPoint, QPoint endPoint,QPen p,int width, QImage &image);
-    void paintPolygon(QVector<QPoint> pointList,QPen p,int width, QImage &image);
+
+    void paintPolygon(QVector<QPoint> pointList,QPen p, QImage &image);
 
     void paintTrans(QImage &image);   //绘制平移图形
     void paintRotate(double thita,QImage &image);
@@ -123,6 +107,8 @@ private:
     double thita;  //旋转用
     double sX;  //缩放用
     double sY;
+    int width=1;  //笔宽
+
     QPoint   deltaPoint;
     QImage    m_image;
     QImage    m_tmpImage;
@@ -146,13 +132,15 @@ private:
 
     DrawShapeType   m_drawShapeType;
 
+    Shape* m_currShapes;  //当前绘画图元
+    Shape* m_assistShapes;  //当前辅助图元
+
     QVector<Shape*>         m_shapes;
     QVector<Linecenter*>    m_linecenters;
     QVector<LineBresenham*> m_lineBresenhams;
 
-    QVector<Scan*>          m_scans;
-    QVector<QPoint>         m_point;
-    QVector<CohenSutherlandd*> m_cohenSutherlands;
+
+
     //存储
 
     Pencil* pencil;    //自定义的画笔

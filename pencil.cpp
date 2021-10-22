@@ -1,6 +1,6 @@
 #include "pencil.h"
+#include <iostream>
 
-int Pencil::width = 1;
 
 Pencil::Pencil(){
     width = 1;
@@ -21,13 +21,13 @@ void Pencil::RectPen(QPainter *painter, QColor color,int width,int x,int y)
 
 void Pencil::CirclePen(QPainter *painter,int x,int y)
 {
-
     int xc,yc,r,e;
     r= width;
     xc=x;yc=y;    //yc,xc为基础坐标
     x=0;y=r;
     e=1.25-r;
     int tempy=y;                       //用tempy纵向打印
+
     while(tempy>=0)
     {
         painter->drawPoint(x+xc,tempy+yc);
