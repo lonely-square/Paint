@@ -45,6 +45,10 @@ public:
 
     virtual bool setEndPoint(QPoint);
 
+    virtual QPoint getBeginPoint(){};
+
+    virtual bool setBeginPoint(QPoint){return false;};
+
     double dis(QPoint pos){
       int x=center.x()-pos.x();
       int y=center.y()-pos.y();
@@ -77,6 +81,7 @@ public:
     void DrawIt(QPainter* ptr,QColor color);
     void paintLinecenter(QPainter* paint);
     bool setEndPoint(QPoint);
+
 
     void translation(int offsetX,int offsetY);//平移
     void rotate(double thita);
@@ -137,6 +142,10 @@ public:
     bool IsIn(QPoint);
     void DrawIt(QPainter* ptr,QColor color);
     bool setEndPoint(QPoint);
+    bool setBeginPoint(QPoint p){
+        endPoint=p;
+        return true;};
+    QPoint getBeginPoint(){return beginPoint;};
     void paintCircle(QPoint beginPoint, QPoint endPoint,QPen p,int width, QPainter* paint);
 
     void translation(int offsetX,int offsetY);//平移
@@ -159,6 +168,7 @@ public:
         center=beginPoint;
 
     }
+
     void translation(int offsetX,int offsetY);//平移
     void rotate(double thita);
     void zoom(double x,double y);

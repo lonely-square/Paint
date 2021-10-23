@@ -26,50 +26,6 @@ PaintWindow::PaintWindow(QWidget *parent) :
 
 }
 
-//void PaintWindow::keyPressEvent(QKeyEvent *ev)
-//{
-//    qDebug() << "键盘" <<endl;
-//    m_paintArea->m_tmpImage = m_paintArea->m_tmpImageTrans;
-//    if(ev->key() == Qt::Key_W)
-//    {
-//        if(m_paintArea->m_drawShapeType == PaintArea::EnumRotateShape)
-//        {
-//            qDebug() << "按了旋转了" <<endl;
-//            m_paintArea->thita = 1;
-//            m_paintArea->paintImage(m_paintArea->m_tmpImage);
-
-//        }
-//        else if(m_paintArea->m_drawShapeType == PaintArea::EnumZoomShape)
-//        {
-
-//            qDebug() << "按了缩放了" <<endl;
-//            m_paintArea->sX=1.1;
-//            m_paintArea->sY=1.1;
-//            m_paintArea->paintImage(m_paintArea->m_tmpImage);
-
-//        }
-//    }
-//    if(ev->key() == Qt::Key_S)//F1按钮
-//    {
-//        if(m_paintArea->m_drawShapeType == PaintArea::EnumRotateShape)
-//        {
-
-//            qDebug() << "按了旋转了" <<endl;
-//            m_paintArea->thita = -1;
-//            m_paintArea->paintImage(m_paintArea->m_tmpImage);
-
-//        }
-//        else if(m_paintArea->m_drawShapeType == PaintArea::EnumZoomShape)
-//        {
-//            qDebug() << "按了缩放了" <<endl;
-//            m_paintArea->sX=0.9;
-//            m_paintArea->sY=0.9;
-//            m_paintArea->paintImage(m_paintArea->m_tmpImage);
-
-//        }
-//    }
-
-//}
 
 PaintWindow::~PaintWindow()
 {
@@ -124,12 +80,15 @@ void PaintWindow::createMenu()
     m_actCircle = new QAction(tr("圆形"), this);
     m_actEllipse = new QAction(tr("椭圆"), this);
     m_actPolygon = new QAction(tr("多边形"), this);
+    m_actBezier = new QAction(tr("Bezier曲线"), this);
+
     connect(m_actLinecenter, SIGNAL(triggered(bool)), this, SLOT(onDrawLinecenter()));
     connect(m_actLineBresenham, SIGNAL(triggered(bool)), this, SLOT(onDrawLineBresenham()));
     connect(m_actRect, SIGNAL(triggered(bool)), this, SLOT(onDrawRect()));
     connect(m_actCircle, SIGNAL(triggered(bool)), this, SLOT(onDrawCircle()));
     connect(m_actEllipse, SIGNAL(triggered(bool)), this, SLOT(onDrawEllipse()));
     connect(m_actPolygon, SIGNAL(triggered(bool)), this, SLOT(onDrawPolygon()));
+    connect(m_actBezier, SIGNAL(triggered(bool)), this, SLOT(onDrawBeizer()));
 
     QMenu *toolMenu = new QMenu(tr("形状"), this);
     toolMenu->addSeparator();
@@ -139,6 +98,9 @@ void PaintWindow::createMenu()
     toolMenu->addAction(m_actCircle);
     toolMenu->addAction(m_actEllipse);
     toolMenu->addAction(m_actPolygon);
+    toolMenu->addAction(m_actBezier);
+
+
     /*m_menuBar = this->menuBar();
     m_menuBar->addMenu(fileMenu);
     m_menuBar->addMenu(editMenu);
@@ -383,6 +345,12 @@ void PaintWindow::onDrawEllipse()
 void PaintWindow::onDrawPolygon()
 {
     m_paintArea->setDrawShape(PaintArea::EnumDrawPolygon);
+}
+
+void PaintWindow::onDrawBeizer()
+{
+    cout<<"bezier 1000"<<endl;
+    m_paintArea->setDrawShape(PaintArea::EnumDrawBeizer);
 }
 
 void PaintWindow::onScanFill()

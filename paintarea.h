@@ -40,6 +40,7 @@ public:
         EnumTransShape,  //平移模式
         EnumRotateShape,
         EnumZoomShape,
+        EnumDrawBeizer,
     };
 
 
@@ -95,6 +96,8 @@ public:
     void setPen(QPen,int);//设置画笔
     void setBrush(QBrush, int);
 
+    void cleanFixPoint(QPoint chosepoint);
+
 
 protected:
     void paintEvent(QPaintEvent *event);
@@ -109,6 +112,7 @@ private:
     double sY;
     int width=1;  //笔宽
 
+    bool bezierTrigger = false;  //是否生成bezier
     QPoint   deltaPoint;
     QImage    m_image;
     QImage    m_tmpImage;
@@ -134,6 +138,7 @@ private:
 
     Shape* m_currShapes;  //当前绘画图元
     Shape* m_assistShapes;  //当前辅助图元
+    QVector<Shape*> m_assistShapes2;  //用于控制bezier曲线的辅助图元
 
     QVector<Shape*>         m_shapes;
     QVector<Linecenter*>    m_linecenters;

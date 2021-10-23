@@ -45,6 +45,7 @@ public slots:
     void onDrawNone();
     void onDrawLinecenter();
     void onDrawLineBresenham();
+    void onDrawBeizer();
     void onDrawRect();
     void onDrawCircle();
     void onDrawEllipse();
@@ -79,6 +80,7 @@ private:
     QAction  *m_actCircle;
     QAction  *m_actEllipse;
     QAction  *m_actPolygon;
+    QAction  *m_actBezier;
     QAction  *m_actScan;
     QAction  *m_actSeed;
     QAction  *m_actCohenSutherland;
