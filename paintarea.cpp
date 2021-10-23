@@ -625,6 +625,7 @@ void PaintArea::paintTrans(QImage &image)
 
 void PaintArea::paintRotate(double thita,QImage &image)
 {
+    qDebug() << "00019"<<endl;
     QPainter paint(&image);
     for(int i=0;i<m_shapes.size();i++)
     {
@@ -666,7 +667,6 @@ void PaintArea::paintImage(QImage &image)
     }
     else if (m_drawShapeType == EnumDrawPolygon) {
 
-
          paintPolygon(pointList,pen,image);
     }
     else if (m_drawShapeType == EnumScanFill) {
@@ -690,6 +690,8 @@ void PaintArea::paintImage(QImage &image)
          paintZoom(sX,sY,image);
      }
      else if (m_drawShapeType == EnumRotateShape) {
+
+         qDebug() << "0009"<<endl;
          paintRotate(thita,image);
      }
 
@@ -727,7 +729,7 @@ void PaintArea::mousePressEvent(QMouseEvent *event)
             //将第一个点传给容器，为了让最后一个点与第一个点在双击之后进行相连
 
 
-            pointList.push_back(pointList[0]);
+            pointList.push_back(pointList[0] / m_scale);
 
             polygon *polygon2 = new polygon;
             polygon2->pointList=pointList;
@@ -745,7 +747,6 @@ void PaintArea::mousePressEvent(QMouseEvent *event)
             pointList.pop_back();
             Bezier *Bezier2 = new Bezier;
             Bezier2->fixPoints = pointList;
-            Bezier2->create();
             Bezier2->width = width;
             Bezier2->p = pen;
             m_shapes.push_back(Bezier2);
@@ -772,7 +773,7 @@ void PaintArea::mousePressEvent(QMouseEvent *event)
            if(m_drawShapeType == EnumDrawPolygon)
             {
 
-               pointList.push_back(m_beginPoint);
+               pointList.push_back(m_beginPoint / m_scale);
 
             }
            else if(m_drawShapeType == EnumTransShape)
@@ -1018,8 +1019,9 @@ void PaintArea::keyPressEvent(QKeyEvent *ev)
     {
         if(m_drawShapeType == PaintArea::EnumRotateShape)
         {
-      //       << "按了旋转了" <<endl;
+         qDebug()  << "按了旋转了" <<endl;
             thita = 1;
+
             paintImage(m_tmpImage);
 
         }

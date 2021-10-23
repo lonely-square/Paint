@@ -48,6 +48,7 @@ Eigen::Matrix3d getRotate2dCenter(double thita,QPoint center)
     Eigen::Matrix3d rotateCenterMatrix =Eigen::Matrix3d::Identity();
     Eigen::Matrix3d Matrix1 = getTranslation2d(-x,-y);
     Eigen::Matrix3d Matrix2 = getRotate2d(thita);
+    cout<< Matrix2 <<endl;
     Eigen::Matrix3d Matrix3 = getTranslation2d(x,y);
     rotateCenterMatrix= Matrix3*Matrix2*Matrix1*rotateCenterMatrix;
     return rotateCenterMatrix;
@@ -861,6 +862,53 @@ void polygon::translation(int offsetX,int offsetY)
     setcenter();
 }
 
+void Bezier::rotate(double thita)
+{
+    Eigen::Matrix3d matrix = getRotate2dCenter(thita,center);
+
+
+    for (int i=0;i<fixPoints.size();i++)
+    {
+        Eigen::Vector3d vecter = pointToVecter(fixPoints[i]);
+
+        Eigen::Vector3d res = matrix*vecter;
+
+        fixPoints[i]=QPoint(res.x(),res.y());
+    }
+
+    setcenter();
+
+}
+
+void Bezier::zoom(double x,double y)
+{
+    Eigen::Matrix3d matrix = getScale2dCenter(x,y,center);
+
+    for (int i=0;i<fixPoints.size();i++)
+    {
+        Eigen::Vector3d vecter = pointToVecter(fixPoints[i]);
+        Eigen::Vector3d res = matrix*vecter;
+        fixPoints[i]=QPoint(res.x(),res.y());
+
+    }
+
+    setcenter();
+}
+
+void Bezier::translation(int offsetX,int offsetY)
+{
+
+    for (int i=0;i<fixPoints.size();i++)
+    {
+        int x=fixPoints[i].x()+offsetX;
+        int y=fixPoints[i].y()+offsetY;
+        fixPoints[i]=QPoint(x,y);
+
+    }
+
+    setcenter();
+}
+
 void Linecenter::rotate(double thita)
 {
     Eigen::Matrix3d matrix = getRotate2dCenter(thita,center);
@@ -870,8 +918,11 @@ void Linecenter::rotate(double thita)
 
         Eigen::Vector3d res = matrix*vecter;
 
+        qDebug() <<beginPoint << endl;
+
         beginPoint=QPoint(res.x(),res.y());
 
+         qDebug() <<beginPoint << endl;
          vecter = pointToVecter(endPoint);
 
         res = matrix*vecter;
@@ -1185,11 +1236,32 @@ void Bezier::create()
 
 bool Bezier::IsIn(QPoint p)
 {
-    return true;
+    int minX=fixPoints[0].x(),minY=fixPoints[0].y(),maxX=fixPoints[0].x(),maxY=fixPoints[0].y();
+    QVector<QPoint>::iterator iter;
+    for (iter=fixPoints.begin(); iter!=fixPoints.end(); iter++)
+    {
+        if (iter->y() > maxY)
+            maxY = iter->y();
+    if (iter->y() < minY)
+        minY = iter->y();
+    if (iter->x() > maxX)
+        maxX = iter->x();
+    if (iter->x() < minX)
+        minX = iter->x();
+     }
+
+    if( (p.x()>minX && p.x()<maxX)&&(p.y()>minY && p.y()<maxY))
+    {
+        cout<<"choose Bezier"<<endl;
+        return true;
+    }
+    return false;
 }
 
 void Bezier::DrawIt(QPainter* ptr,QColor color)
 {
+    resPoints.clear();
+    create();
     p.setColor(Qt::red);
     ptr->setPen(p);
     for (int i=0;i < resPoints.size() ; i++) {
@@ -1209,17 +1281,22 @@ bool Linecenter::IsIn(QPoint p)
            ymin = beginPoint.y();
            ymax = endPoint.y();
        }
+\
 
-       if(p.y()<=ymax&&p.y()>=ymin){
-           if((endPoint.y()-beginPoint.y())*p.x()-(endPoint.x()-beginPoint.x())*p.y()+(endPoint.x()-beginPoint.x())*beginPoint.y()-(endPoint.y()-beginPoint.y())*beginPoint.x()<=width){
+       if(p.y()<=ymax&&p.y()>=ymin) return false;
+
+       double A=endPoint.y()-beginPoint.y();
+       double B=-(endPoint.x()-beginPoint.x());
+       double C=endPoint.x()*beginPoint.y()-endPoint.y()*beginPoint.x();
+       double res=abs((A*p.x()+B*p.y()+C)/sqrt(A*A+B*B));
+        qDebug()<< res <<endl;
+       if(res<=width){
                qDebug()<< "choosed zhixian" <<endl;
                return true;
            }
-           else
-               return false;
-       }
-       else
-           return false;
+
+     return false;
+
 }
 
 void Linecenter::DrawIt(QPainter* ptr,QColor color)

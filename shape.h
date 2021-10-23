@@ -83,23 +83,6 @@ public:
     void zoom(double x,double y);
 };
 
-class Bezier:public Shape{
-public:
-    QVector<QPoint> fixPoints;  //固定点
-    QVector<QPoint> resPoints;  //生成点
-
-    void create();
-    void setcenter(){
-
-    }
-
-    bool IsIn(QPoint);
-    void DrawIt(QPainter* ptr,QColor color);
-
-
-
-};
-
 class LineBresenham: public Shape{
 public:
     QPoint beginPoint;
@@ -206,6 +189,36 @@ public:
     void translation(int offsetX,int offsetY);//平移
     void rotate(double thita);
     void zoom(double x,double y);
+};
+
+class Bezier:public Shape{
+public:
+    QVector<QPoint> fixPoints;  //固定点
+    QVector<QPoint> resPoints;  //生成点
+
+    void create();
+    void setcenter(){
+        int x=0,y=0;
+        for(int i = 0; i<fixPoints.size()-1; i++)
+        {
+            x+=fixPoints[i].x();
+            y+=fixPoints[i].y();
+        }
+
+        x/=(fixPoints.size()-1);
+        y/=(fixPoints.size()-1);
+
+        center=QPoint(x,y);
+
+    }
+
+    bool IsIn(QPoint);
+    void DrawIt(QPainter* ptr,QColor color);
+
+    void translation(int offsetX,int offsetY);//平移
+    void rotate(double thita);
+    void zoom(double x,double y);
+
 };
 
 
