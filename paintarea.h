@@ -83,7 +83,7 @@ public:
 
     void paintPolygon(QVector<QPoint> pointList,QPen p, QImage &image);
 
-    void paintTrans(QImage &image);   //绘制平移图形
+    void paintTrans(QPainter* paint,QVector<Shape*> m_shapes);   //绘制平移图形
     void paintRotate(double thita,QImage &image);
     void paintZoom(double x,double y,QImage &image);
 
@@ -113,6 +113,7 @@ private:
     int width=1;  //笔宽
 
     bool bezierTrigger = false;  //是否生成bezier
+    bool fixpointTrigger = false; //是否选择控制点
     QPoint   deltaPoint;
     QImage    m_image;
     QImage    m_tmpImage;
@@ -139,6 +140,7 @@ private:
     Shape* m_currShapes;  //当前绘画图元
     Shape* m_assistShapes;  //当前辅助图元
     QVector<Shape*> m_assistShapes2;  //用于控制bezier曲线的辅助图元
+
 
     QVector<Shape*>         m_shapes;
     QVector<Linecenter*>    m_linecenters;

@@ -610,16 +610,15 @@ void PaintArea::Middleland(float x1,float y1,float x2,float y2,float xmin,float 
 }
 
 
-void PaintArea::paintTrans(QImage &image)
+void PaintArea::paintTrans(QPainter* paint,QVector<Shape*> m_shapes)  //画布和图元集
 {
-    QPainter paint(&image);
     for(int i=0;i<m_shapes.size();i++)
     {
         if (m_shapes[i]->ischoose)
         {
-            paint.setPen(m_shapes[i]->p);
+            paint->setPen(m_shapes[i]->p);
             m_shapes[i]->translation(deltaPoint.x(),deltaPoint.y());
-            m_shapes[i]->DrawIt(&paint,m_shapes[i]->p.color());
+            m_shapes[i]->DrawIt(paint,m_shapes[i]->p.color());
         }
     }
 }
@@ -685,7 +684,8 @@ void PaintArea::paintImage(QImage &image)
          m_isModify = true;
     }
      else if (m_drawShapeType == EnumTransShape) {
-         paintTrans(image);
+         QPainter paint(&image);
+         paintTrans(&paint,m_shapes);  //移动选中的
      }
      else if (m_drawShapeType == EnumZoomShape) {
          paintZoom(sX,sY,image);
@@ -695,17 +695,21 @@ void PaintArea::paintImage(QImage &image)
      }
      else if (m_drawShapeType == EnumDrawBeizer) {
          QPainter paint(&image);
-         if (bezierTrigger == false)
+
+         if (bezierTrigger == false)   //是否产生曲线
          {
-             for (int k=0;k<m_assistShapes2.size();k++)
+             if (fixpointTrigger == false)   //没有控制点被选中
              {
-                 if (m_assistShapes2[k]->ischoose)   //如果选中则移动
+                 for (int k=0;k<m_assistShapes2.size();k++)
                  {
-                     m_assistShapes2[k]->setBeginPoint(m_endPoint/m_scale);
-                     m_assistShapes2[k]->setEndPoint((m_endPoint/m_scale)+QPoint(4,4));
+                     m_assistShapes2[k]->DrawIt(&paint,pen.color());
                  }
-                 m_assistShapes2[k]->DrawIt(&paint,pen.color());
              }
+             else             //控制点被选中
+                 {
+                  paintTrans(&paint,m_assistShapes2);
+             }
+
          }
          else {
              m_currShapes->DrawIt(&paint,pen.color());
@@ -728,7 +732,7 @@ void PaintArea::paintEvent(QPaintEvent */*event*/)
     }
     else {
 
-        if (m_drawShapeType == EnumTransShape | m_drawShapeType == EnumZoomShape | m_drawShapeType == EnumRotateShape) m_image=m_tmpImage;  //平移模式移动好以后，覆盖主画布
+        if (m_drawShapeType == EnumTransShape | m_drawShapeType == EnumZoomShape | m_drawShapeType == EnumRotateShape | (m_drawShapeType == EnumDrawBeizer&& bezierTrigger == false&& fixpointTrigger == true ) ) m_image=m_tmpImage;  //平移模式移动好以后，覆盖主画布
 
         paint.drawImage(0, 0, m_image);
     }
@@ -775,15 +779,22 @@ void PaintArea::mousePressEvent(QMouseEvent *event)
 
             Bezier *Bezier2 = new Bezier;
             Bezier2->fixPoints = pointList;
+
+            qDebug() << pointList <<endl;
             Bezier2->width = width;
             Bezier2->p = pen;
             m_shapes.push_back(Bezier2);
+
             m_currShapes=Bezier2;
+
             bezierTrigger = true;
 
             paintImage(m_image);
 
-            pointList.clear();//清空，方便下一次画
+            pointList.clear();
+
+            QVector<Shape *>().swap(m_assistShapes2);
+            //清空，方便下一次画
         }
     }
 
@@ -811,22 +822,10 @@ void PaintArea::mousePressEvent(QMouseEvent *event)
             {
                //这么个逻辑，点击了圆圈则移动圆圈，否则添加圆圈
 
-               cleanFixPoint(event->pos());
+               cleanFixPoint(event->pos()/m_scale);
 
                //画布逻辑和平移类似,保存非选中
 
-               m_tmpImageTrans = QImage(1500, 750, QImage::Format_RGB32);
-               m_imageBgColor = QColor(255, 255, 255);
-               m_tmpImageTrans.fill(m_imageBgColor);
-
-               QPainter painter(&m_tmpImageTrans); //先将m_tmpImageTrans画上非选中图元以备用
-               for(int i=0;i<m_assistShapes2.size();i++)
-               {
-                   if(!m_assistShapes2[i]->ischoose)
-                   {
-                       m_assistShapes2[i]->DrawIt(&painter,m_assistShapes2[i]->p.color());
-                   }
-               }
             }
            else if(m_drawShapeType == EnumTransShape)
             {
@@ -958,30 +957,48 @@ void PaintArea::cleanFixPoint(QPoint chosepoint)  //控制bezier控制点
         circle->m_drawLineType=Shape::defaultLine;
         circle->setcenter();
         m_assistShapes2.push_back(circle);
+
         return;
     }
-    for (int k=0;k<m_assistShapes2.size();k++)
+
+    for (int k=0;k<m_assistShapes2.size();k++)   //有点可选时
     {
         if(m_assistShapes2[k]->IsIn(chosepoint))
          {
                 m_assistShapes2[k]->ischoose=true;
-          }
-        else
-          {
-            Circle *circle = new Circle;
-            circle->beginPoint = m_beginPoint/m_scale;
-            circle->endPoint = (m_beginPoint/m_scale)+QPoint(4,4);
-            circle->ischoose = false;
-            circle->p=pen;
-            circle->width=2;
-            circle->m_drawLineType=Shape::defaultLine;
-            circle->setcenter();
-            m_assistShapes2.push_back(circle);
+                fixpointTrigger = true;
+
+                m_tmpImageTrans = QImage(1500, 750, QImage::Format_RGB32);
+                m_imageBgColor = QColor(255, 255, 255);
+                m_tmpImageTrans.fill(m_imageBgColor);
+
+                QPainter painter(&m_tmpImageTrans); //先将m_tmpImageTrans画上非选中图元以备用
+                for(int i=0;i<m_assistShapes2.size();i++)
+                {
+                    if(!m_assistShapes2[i]->ischoose)
+                    {
+                        m_assistShapes2[i]->DrawIt(&painter,m_assistShapes2[i]->p.color());
+                    }
+                }
+
+                return ;
           }
 
     }
 
+    fixpointTrigger = false;
+    Circle *circle = new Circle;
+    circle->beginPoint = m_beginPoint/m_scale;
+    circle->endPoint = (m_beginPoint/m_scale)+QPoint(4,4);
+    circle->ischoose = false;
+    circle->p=pen;
+    circle->width=2;
+    circle->m_drawLineType=Shape::defaultLine;
+    circle->setcenter();
+    m_assistShapes2.push_back(circle);
+
 }
+
 void PaintArea::mouseMoveEvent(QMouseEvent *event)
 {
     if (m_drawShapeType == EnumZoomShape | m_drawShapeType == EnumRotateShape | m_isChoose ) return;
@@ -992,12 +1009,12 @@ void PaintArea::mouseMoveEvent(QMouseEvent *event)
                     {
                          m_isMove = true;
                     }
-            else if (m_drawShapeType == EnumTransShape | m_drawShapeType ==EnumDrawBeizer) {
+            else if (m_drawShapeType == EnumTransShape | (m_drawShapeType == EnumDrawBeizer&& bezierTrigger == false&& fixpointTrigger == true )  ) {
 
                 deltaPoint = m_endPoint;
                 m_endPoint = event->pos();
-                deltaPoint = m_endPoint -deltaPoint;
 
+                deltaPoint = m_endPoint -deltaPoint;
                 m_tmpImage = m_tmpImageTrans;
                 paintImage(m_tmpImage);
             }
@@ -1101,6 +1118,7 @@ void PaintArea::mouseReleaseEvent(QMouseEvent *event)
                  }
 
              }
+             fixpointTrigger = false;
          }
          paintImage(m_image);
     }
