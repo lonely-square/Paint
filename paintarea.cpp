@@ -972,12 +972,19 @@ void PaintArea::cleanFixPoint(QPoint chosepoint)  //控制bezier控制点
                 m_imageBgColor = QColor(255, 255, 255);
                 m_tmpImageTrans.fill(m_imageBgColor);
 
-                QPainter painter(&m_tmpImageTrans); //先将m_tmpImageTrans画上非选中图元以备用
-                for(int i=0;i<m_assistShapes2.size();i++)
+                QPainter painter(&m_tmpImageTrans);  //先将m_tmpImageTrans画上非选中图元以备用
+                for(int i=0;i<m_assistShapes2.size();i++)  //画上现有控制点，和图元
                 {
                     if(!m_assistShapes2[i]->ischoose)
                     {
                         m_assistShapes2[i]->DrawIt(&painter,m_assistShapes2[i]->p.color());
+                    }
+                }
+                for(int i=0;i<m_shapes.size();i++)
+                {
+                    if(!m_shapes[i]->ischoose)
+                    {
+                        m_shapes[i]->DrawIt(&painter,m_shapes[i]->p.color());
                     }
                 }
 
