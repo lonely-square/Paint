@@ -714,6 +714,7 @@ void PaintArea::paintImage(QImage &image)
          else {
              m_currShapes->DrawIt(&paint,pen.color());
              bezierTrigger = false;
+             fixpointTrigger = false;
          }
          m_isModify = true;
      }
@@ -1125,7 +1126,6 @@ void PaintArea::mouseReleaseEvent(QMouseEvent *event)
                  }
 
              }
-             fixpointTrigger = false;
          }
          paintImage(m_image);
     }
