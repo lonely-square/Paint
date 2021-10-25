@@ -784,6 +784,7 @@ void PaintArea::mousePressEvent(QMouseEvent *event)
             qDebug() << pointList <<endl;
             Bezier2->width = width;
             Bezier2->p = pen;
+             Bezier2->setcenter();
             m_shapes.push_back(Bezier2);
 
             m_currShapes=Bezier2;

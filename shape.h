@@ -224,7 +224,6 @@ public:
 
     bool IsIn(QPoint);
     void DrawIt(QPainter* ptr,QColor color);
-
     void translation(int offsetX,int offsetY);//平移
     void rotate(double thita);
     void zoom(double x,double y);
