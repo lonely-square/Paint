@@ -108,7 +108,7 @@ void PaintArea::setDrawShape(DrawShapeType drawShapeType)
             }
         }
     }
-    setFocus();
+    setFocus();   //修改直线旋转bug
 }
 
 void PaintArea::setLineShape(Shape::DrawLineType drawLinrType)

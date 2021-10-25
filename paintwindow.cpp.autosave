@@ -304,7 +304,6 @@ void PaintWindow::onTranslation()
 void PaintWindow::onRotate()
 {
     m_paintArea->setDrawShape(PaintArea::EnumRotateShape);
-    m_paintArea->setFocus();
 }
 
 void PaintWindow::onZoom()

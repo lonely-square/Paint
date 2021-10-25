@@ -1283,7 +1283,7 @@ bool Linecenter::IsIn(QPoint p)
        }
 \
 
-       if(p.y()<=ymax&&p.y()>=ymin) return false;
+       if(!(p.y()<=ymax&&p.y()>=ymin)) return false;
 
        double A=endPoint.y()-beginPoint.y();
        double B=-(endPoint.x()-beginPoint.x());
